@@ -5,8 +5,8 @@ cls
 echo off
 
 rem Env stuff.
-rem set ST_PACKAGES_PATH=%APPDATA%\Sublime Text\Packages
-set PYTHONPATH=%APPDATA%\Sublime Text\Packages;%APPDATA%\Sublime Text\Packages\StPluginTester\st_emul
+set ST_PACKAGES_PATH=%APPDATA%\Sublime Text\Packages
+rem set PYTHONPATH=%APPDATA%\Sublime Text\Packages;%APPDATA%\Sublime Text\Packages\StPluginTester\st_emul
 echo %PYTHONPATH%
 
 rem Different ways of executing:::

@@ -3,33 +3,15 @@ import sys
 import os
 import unittest
 from unittest.mock import MagicMock
+
 import sublime
 import sublime_plugin
 
-
-
-#PYTHONPATH=$(APPDATA)\Sublime Text\Packages;$(APPDATA)\Sublime Text\Packages\StPluginTester\st_emul
-
-# This supports VS intellisense but doesn't run in VS or cli.
+# TODO This supports VS intellisense but doesn't run in VS or cli.
 #from ..Notr import notr
-
 # vice versa.
 from Notr import notr
 
-
-## Returns `None` if the key doesn't exist
-#print(os.environ.get('KEY_THAT_MIGHT_EXIST'))
-## Returns `default_value` if the key doesn't exist
-#print(os.environ.get('KEY_THAT_MIGHT_EXIST', default_value))
-## Returns `default_value` if the key doesn't exist
-#print(os.getenv('KEY_THAT_MIGHT_EXIST', default_value))
-
-
-print('sys.path:::')
-print(sys.path)
-
-print('os.environ:::')
-print(os.environ)
 
 #-----------------------------------------------------------------------------------
 class TestNotr(unittest.TestCase):
