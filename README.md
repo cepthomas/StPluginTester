@@ -14,10 +14,11 @@ Also several suites for the plugins next door to this repository.
 
 ## General Notes
 
+- Who invented the abomination of python package and module management?
 - ST doesn't load modules like plain python and can cause some surprises. The problem is that sbot_common
   gets reloaded but it appears to be a different module from the one linked to by the other modules.
   This makes handling globals difficult. ?? Modules that are common cannot store meaningful state.
-- Care must be taken to separate controller from view. I small amount of architectural consideration will go
+- Care must be taken to separate controller from view. A small amount of architectural consideration will go
   a long way to keep mock madness to a minimum.
 
 

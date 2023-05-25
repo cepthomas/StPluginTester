@@ -5,7 +5,8 @@
     <ProjectGuid>56224532-0e9c-4b7c-9778-7a7e97187dad</ProjectGuid>
     <ProjectHome>.</ProjectHome>
     <StartupFile>test_notr.py</StartupFile>
-    <SearchPath>..\;st_emul</SearchPath>
+    <SearchPath>
+    </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>StPluginTester</Name>
@@ -15,8 +16,7 @@
     <SuppressConfigureTestFrameworkPrompt>true</SuppressConfigureTestFrameworkPrompt>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <Environment>UNIT_TEST=1;
-PYTHONPATH=%PYTHONPATH%;..;st_emul      
-    </Environment>
+PYTHONPATH=$(APPDATA)\Sublime Text\Packages;$(APPDATA)\Sublime Text\Packages\StPluginTester\st_emul</Environment>
     <TestFramework>unittest</TestFramework>
     <UnitTestPattern>test_*.py</UnitTestPattern>
     <UnitTestRootDirectory>.</UnitTestRootDirectory>
@@ -31,7 +31,9 @@ PYTHONPATH=%PYTHONPATH%;..;st_emul
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="run.py" />
+    <Compile Include="run_test.py" />
+    <Compile Include="st_emul\sublime.py" />
+    <Compile Include="st_emul\sublime_plugin.py" />
     <Compile Include="test_format.py" />
     <Compile Include="test_logger.py" />
     <Compile Include="test_notr.py" />
@@ -45,8 +47,6 @@ PYTHONPATH=%PYTHONPATH%;..;st_emul
     <Compile Include="..\SbotSidebar\sbot_sidebar.py" />
     <Compile Include="..\SbotSignet\sbot_signet.py" />
     <Compile Include="..\SbotUtils\sbot_utils.py" />
-    <Compile Include="st_emul\sublime.py" />
-    <Compile Include="st_emul\sublime_plugin.py" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="files\500denselines.txt" />

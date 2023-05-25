@@ -1,17 +1,35 @@
+
+import sys
+import os
 import unittest
-#import unittest.mock
 from unittest.mock import MagicMock
 import sublime
 import sublime_plugin
-# from sbot_common import *
-#import notr as notr
 
+
+
+#PYTHONPATH=$(APPDATA)\Sublime Text\Packages;$(APPDATA)\Sublime Text\Packages\StPluginTester\st_emul
+
+# This supports VS intellisense but doesn't run in VS or cli.
+#from ..Notr import notr
+
+# vice versa.
 from Notr import notr
-#import Notr.notr# as notr
-#from .notr import *
 
-#import ..notr
 
+## Returns `None` if the key doesn't exist
+#print(os.environ.get('KEY_THAT_MIGHT_EXIST'))
+## Returns `default_value` if the key doesn't exist
+#print(os.environ.get('KEY_THAT_MIGHT_EXIST', default_value))
+## Returns `default_value` if the key doesn't exist
+#print(os.getenv('KEY_THAT_MIGHT_EXIST', default_value))
+
+
+print('sys.path:::')
+print(sys.path)
+
+print('os.environ:::')
+print(os.environ)
 
 #-----------------------------------------------------------------------------------
 class TestNotr(unittest.TestCase):
@@ -21,27 +39,14 @@ class TestNotr(unittest.TestCase):
     def setUp(self):
         # Mock settings.
         mock_settings = {
-            "notr_paths": ["C:\\Users\\cepth\\AppData\\Roaming\\Sublime Text\\Packages\\Notr\\test\\files"],
+            "notr_paths": ["C:\\Users\\cepth\\AppData\\Roaming\\Sublime Text\\Packages\\Notr\\files"],
             "visual_line_length": 100,
             "user_hl": [["2DO", "things"], ["user"], ["dynamic"], ["and_a"], ["and_b"], ["and_c"]],
             "user_hl_whole_word": True,
         }
         sublime.load_settings = MagicMock(return_value = mock_settings)
 
-        
-        # Mock settings with side effect.
-        #settings = sublime.load_settings('NOTR_SETTINGS_FILE')
-        #notr_paths = settings.get('notr_paths')
-        #def settings_get_side_effect(*args, **kwargs):
-        #    if args[0] == 'notr_paths':
-        #        return ["C:\\Users\\cepth\\AppData\\Roaming\\Sublime Text\\Packages\\Notr",
-        #                "C:\\Users\\cepth\\OneDrive\\OneDrive Documents\\_notes" ]
-        #    else:
-        #        raise Exception('haha')
-        #settings.get = MagicMock(side_effect = settings_get_side_effect)
-
-
-        # Old stuff.
+        # Init internals.
         self.view = sublime.View(600)
         sel = sublime.Selection(self.view.id())
         sel.add(sublime.Region(10, 20, 101))
@@ -56,13 +61,14 @@ class TestNotr(unittest.TestCase):
         pass
 
     def test_init(self):
+
         # slog('ooo', 'test_init()')
         evt = notr.NotrEvent()
         evt.on_init([self.view])
 
         self.assertEqual(len(notr._tags), 7)
         self.assertEqual(len(notr._links), 6)
-        #self.assertEqual(len(notr._refs), 99)
+        self.assertEqual(len(notr._refs), 8)
         self.assertEqual(len(notr._sections), 13)
 
     def test_GotoRef(self):
@@ -81,6 +87,6 @@ class TestNotr(unittest.TestCase):
         #cmd.run(edit)
 
 
- #-----------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------
 if __name__ == '__main__':
      unittest.main()
