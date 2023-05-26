@@ -17,7 +17,6 @@ from Notr import notr
 #from ..Notr import notr
 
 
-
 #-----------------------------------------------------------------------------------
 class TestNotr(unittest.TestCase):
 
@@ -31,18 +30,18 @@ class TestNotr(unittest.TestCase):
             "user_hl": [["2DO", "things"], ["user"], ["dynamic"], ["and_a"], ["and_b"], ["and_c"]],
             "user_hl_whole_word": True,
         }
-        sublime.load_settings = MagicMock(return_value = mock_settings)
+        sublime.load_settings = MagicMock(return_value=mock_settings)
 
         # Init internals.
         self.view = sublime.View(600)
         sel = sublime.Selection(self.view.id())
         sel.add(sublime.Region(10, 20, 101))
-        self.view.sel = MagicMock(return_value = sel)
+        self.view.sel = MagicMock(return_value=sel)
 
         # Mock syntax.
         syntax = sublime.Syntax()
-        syntax.name = MagicMock(return_value = 'Notr')
-        self.view.syntax = MagicMock(return_value = syntax)
+        syntax.name = MagicMock(return_value='Notr')
+        self.view.syntax = MagicMock(return_value=syntax)
 
     def tearDown(self):
         pass
@@ -76,4 +75,4 @@ class TestNotr(unittest.TestCase):
 
 #-----------------------------------------------------------------------------------
 if __name__ == '__main__':
-     unittest.main()
+    unittest.main()
