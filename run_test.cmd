@@ -1,20 +1,19 @@
 
-rem Run unit tests from the command line.
+:: Run unit tests from the command line.
 
 cls
 echo off
 
-rem Env stuff.
+:: Set up environment.
 set ST_PACKAGES_PATH=%APPDATA%\Sublime Text\Packages
-rem set PYTHONPATH=%APPDATA%\Sublime Text\Packages;%APPDATA%\Sublime Text\Packages\StPluginTester\st_emul
-echo %PYTHONPATH%
+:: set PYTHONPATH=%ST_PACKAGES_PATH%;%ST_PACKAGES_PATH%\StPluginTester
+set PYTHONPATH=%ST_PACKAGES_PATH%
+:: echo %PYTHONPATH%
 
-rem Different ways of executing:::
-
-rem Direct - requires that test_* have if __name__ == '__main__':     unittest.main()
+:: Two options for running tests:
+:: Direct execution of all tests in a suite.
 python test_notr.py
-
-rem Run explicit tests specified in script - like cycler. Doesn't require if __name__ == '__main__':
+:: Run tests explicitly specified in a script.
 python run_test.py
 
-rem pause
+:: pause

@@ -7,10 +7,15 @@ from unittest.mock import MagicMock
 import sublime
 import sublime_plugin
 
-# TODO This supports VS intellisense but doesn't run in VS or cli.
-#from ..Notr import notr
-# vice versa.
+#print('sys.path')
+#print(sys.path)
+
+# This supports execution in VS or from command line but doesn't support intellisense.
 from Notr import notr
+
+# This (sometimes?) supports intellisense but fails to execute with "attempted relative import with no known parent package". TODO2 it's a mystery.
+#from ..Notr import notr
+
 
 
 #-----------------------------------------------------------------------------------

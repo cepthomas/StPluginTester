@@ -1,53 +1,62 @@
 # Sublime Text Plugin Unit Tester
 
-Uses unittest + mocks to debug Sublime Text plugins. This is not an easy thing to do and requires
-some finesse in organizing the source and test projects. Documentation is spotty and somewhat
-ambiguous. Also complicated by the fact that goal is to support both standard command line
-unittest running and a Visual Studio hosted environment for plugin development (intellisense)
-and debug. This latter support should be helpful also for debugging non-ST python applications.
+- Uses Visual Studio 2022 to develop Sublime Text plugins. My preferred tool for python dev.
+- Uses python unittest + mocks to debug plugins using VS.
+- Tests can also be executed from the command line or using unittest test runners.
+- This should also be useful for debugging non-ST python applications.
 
-There's a sparsely populated sublime api emulation in st_emul. To be used in conjunction with mocks.
-It can grow as needed.
+Built for ST4 on Windows. May work on Linux also.
 
-Also several suites for the plugins next door to this repository.
+## Background
 
+It's fairly painful and laborious to debug ST plugins, usually ending up relying on copious print() statements.
+There are three aspects that need to be juggled here:
 
-## General Notes
-
-**Who invented the abomination of python package and module management?**
-
-> ST doesn't load modules like plain python and can cause some surprises. The problem is that sbot_common
-> gets reloaded but it appears to be a different module from the one linked to by the other modules.
-> This makes handling globals difficult.
-
-
-> Or perhaps you don't actually want to run moduleX, you just want to run some other script, say myfile.py, that uses functions
-> inside moduleX. If that is the case, put myfile.py somewhere else – not inside the package directory – and run it.
-> If inside myfile.py you do things like from package.moduleA import spam, it will work fine.
-
+- ST has its own internal implementation of python 3.8 to support plugins. It does not handle packages and modules
+  the same as standard python. This means you can't just import your plugin into an external instance of python
+  and expect it to work. Also the plugin code and the test code both expect to see the ST API interface somewhere.
+- A standard python 3.8+ install is required to support the unittest framework used herein.
+- VS has its own way of handling PYTHONPATH that is a bit puzzling.  
 
 ## Implementation
 
-Has to (TODO?) be at same level as Packages being tested.
+Bearing in mind the limitations described above, after much wrestling here is the directory/file structure of a tester for a plugin
+application (Notr) being developed.
 
 ```
-StPluginTester
-|   run_test.cmd
-|   run_test.py
-|   StPluginTester.pyproj
-|   StPluginTester.sln
-|   sublime.py
-|   sublime_plugin.py
-|   test_format.py
-|   test_logger.py
-|   test_notr.py
-|   
-\---files
-        ...
+C:\Users\<user>\AppData\Roaming\Sublime Text\Packages
+|
++---StPluginTester
+|   |   StPluginTester.pyproj
+|   |   StPluginTester.sln
+|   |   sublime.py
+|   |   sublime_plugin.py
+|   |   test_notr.py
+|   |   run_test.cmd (+ run_test.py)
+|   |
+|   \---files
+|           ...as needed
+|
+\---Notr
+    |   notr.py
+    |   *.sublime-*
+    |   etcetera
+    |
+    \---files
+            ...as needed
 ```
 
+- It would seem that the easiest path is to keep the plugin and tester directories at the same level. This may
+  not actually be true and warrants another investigation at some point.
+- StPluginTester.pyproj/sln are the standard VS project files.
+- sublime.py and sublime_plugin.py are emulation modules for the ST API. They are sparsely populated as the premise
+    is that most of the real work will be done by mocks.
+- test_notr.py is the actual test code.
+- notr.py is the actual code under test.
 
-Do this:
+Other things to consider:
+
+It's probably best to do this:
 ```
 Sublime settings:
     "ignored_packages":
@@ -56,25 +65,40 @@ Sublime settings:
     ]
 ```
 
-In StPluginTester.pyproj:
+Put something like this in StPluginTester.pyproj:
 ```
-    <Environment>UNIT_TEST=1;
-PYTHONPATH=$(APPDATA)\Sublime Text\Packages;$(APPDATA)\Sublime Text\Packages\StPluginTester
-    </Environment>
+<Environment>PYTHONPATH=$(APPDATA)\Sublime Text\Packages</Environment>
 ```
-- UNIT_TEST=1 is not really needed - VS wizard sticks it in there.
-- PYTHONPATH StPluginTester so code-under-test can see sublime/sublime_api
+
+Note that both VS and python module loading insert the current path in sys.path. This is needed so that the code under test can "see"
+the ST eulation modules.
 
 In e.g. test_notr.py:
 
-`from ..Notr import notr`
+```
+from Notr import notr
+```
 
-TODO This supports VS intellisense but doesn't run in VS or cli.
+## Python Package And Module Management
 
-`from Notr import notr`
+**This "management" is a nightmare abomination. Clearly designed without consideration of the future
+and now severely crufty (as is all of python). The lua model is much cleaner and easier to use. /rant**
 
-Vice versa. Run/break/view vars works though.
+> ST doesn't load modules like plain python and can cause some surprises. The problem is that sbot_common
+> gets reloaded but it appears to be a different module from the one linked to by the other modules.
+
+This makes handling globals interesting.
 
 
-In creating plugins care must be taken to separate controller from view. A small amount of architectural consideration will go
-  a long way to keep mock madness to a minimum.
+> To use functions defined in ex.py you either need to import them directly:
+>
+```
+from ex import function_name()
+from ex import *
+```
+> Or refer to the function as a part of ex:
+>
+```
+import ex
+ex.function_name()
+```
