@@ -13,7 +13,7 @@ import sublime_plugin
 # This supports execution in VS or from command line but doesn't support intellisense.
 from Notr import notr
 
-# This (sometimes?) supports intellisense but fails to execute with "attempted relative import with no known parent package". TODO2 it's a mystery.
+# This (sometimes?) supports intellisense but fails to execute with "attempted relative import with no known parent package". It's a mystery.
 #from ..Notr import notr
 
 
