@@ -26,6 +26,7 @@ class TestNotr(unittest.TestCase):
         # Mock settings.
         mock_settings = {
             "notr_paths": ["C:\\Users\\cepth\\AppData\\Roaming\\Sublime Text\\Packages\\Notr\\files"],
+            "notr_index": "C:\\Users\\cepth\\AppData\\Roaming\\Sublime Text\\Packages\\Notr\\files\\index.ntr",
             "visual_line_length": 100,
             "user_hl": [["2DO", "things"], ["user"], ["dynamic"], ["and_a"], ["and_b"], ["and_c"]],
             "user_hl_whole_word": True,
@@ -46,16 +47,22 @@ class TestNotr(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_init(self):
+    def test_on_init(self):
 
-        # slog('ooo', 'test_init()')
+        window = sublime.Window(500)
+        self.view.window = MagicMock(return_value=window)
+
+        vnew = sublime.View(501)
+        window.new_file = MagicMock(return_value = vnew)
+
         evt = notr.NotrEvent()
         evt.on_init([self.view])
 
-        self.assertEqual(len(notr._tags), 7)
+        self.assertEqual(len(notr._tags), 8)
         self.assertEqual(len(notr._links), 6)
-        self.assertEqual(len(notr._refs), 8)
-        self.assertEqual(len(notr._sections), 13)
+        self.assertEqual(len(notr._refs), 6)
+        self.assertEqual(len(notr._sections), 14)
+        self.assertEqual(len(notr._parse_errors), 0)
 
     def test_GotoRef(self):
         edit = sublime.Edit('token')
