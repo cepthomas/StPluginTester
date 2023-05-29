@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>56224532-0e9c-4b7c-9778-7a7e97187dad</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>test_notr.py</StartupFile>
+    <StartupFile>test_stuff.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -34,9 +34,10 @@
     <Compile Include="sublime.py" />
     <Compile Include="sublime_plugin.py" />
     <Compile Include="test_format.py" />
-    <Compile Include="test_logger.py" />
+    <Compile Include="test_stuff.py" />
     <Compile Include="test_notr.py" />
     <Compile Include="..\Notr\notr.py" />
+    <Compile Include="..\SbotHighlight\sbot_highlight.py" />
     <Compile Include="..\SbotALogger\sbot_logger.py" />
     <Compile Include="..\SbotFormat\sbot_format.py" />
     <Compile Include="..\SbotRender\sbot_render.py" />
