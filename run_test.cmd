@@ -11,9 +11,9 @@ set PYTHONPATH=%ST_PACKAGES_PATH%
 :: echo %PYTHONPATH%
 
 :: Two options for running tests:
-:: Direct execution of all tests in a suite.
+:: 1) Direct execution of all tests in a suite.
 python test_notr.py
-:: Run tests explicitly specified in a script.
+:: 2) Run tests explicitly specified in a script.
 python run_test.py
 
 :: pause
