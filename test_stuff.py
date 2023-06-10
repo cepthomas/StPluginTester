@@ -28,7 +28,7 @@ class TestHighlight(unittest.TestCase):
         window = sublime.Window(900)
         view = sublime.View(901)
 
-        view.window = MagicMock(return_value=window)
+        view._window = MagicMock(return_value=window)
         view.file_name = MagicMock(return_value='file123.abc')
 
         # Do the test.

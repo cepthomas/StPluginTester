@@ -48,11 +48,15 @@ C:\Users\<user>\AppData\Roaming\Sublime Text\Packages
 
 - It would seem that the easiest path is to keep the plugin and tester directories at the same level. This may
   not actually be true and warrants another investigation at some point.
-- StPluginTester.pyproj/sln are the standard VS project files.
-- sublime.py and sublime_plugin.py are emulation modules for the ST API. They are sparsely populated as the premise
-    is that most of the real work will be done by mocks.
-- test_notr.py is the actual test code.
-- notr.py is the actual code under test.
+- `StPluginTester.pyproj/sln` are the standard VS project files.
+- `sublime.py` and `sublime_plugin.py` are emulation modules for the ST API.
+- `test_xxx.py` is the actual test code.
+- `xxx.py` is the actual code under test.
+
+The emulation modules implement a simple subset of the ST API. Things like Window class managing the Views etc.
+The more complex functions are not supported and expected to be emulated using mocks. They will throw
+a `NotImplementedError`
+
 
 Other things to consider:
 
