@@ -36,6 +36,7 @@
     <Compile Include="test_format.py" />
     <Compile Include="test_stuff.py" />
     <Compile Include="test_notr.py" />
+    <Compile Include="test_emul.py" />
     <Compile Include="..\Notr\notr.py" />
     <Compile Include="..\Notr\table.py" />
     <Compile Include="..\SbotHighlight\sbot_highlight.py" />
@@ -44,6 +45,7 @@
     <Compile Include="..\SbotRender\sbot_render.py" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="files\ross.txt" />
     <Content Include="files\500denselines.txt" />
     <Content Include="files\5denselines.txt" />
     <Content Include="files\almost1mb.txt" />

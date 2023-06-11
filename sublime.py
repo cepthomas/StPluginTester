@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 
 
 #---------------- Added items to support emulation and debug --------------------------
@@ -54,7 +55,8 @@ def ok_cancel_dialog(msg, ok_title=""):
     _etrace(f'ok_cancel_dialog():{msg}')
     return True
 
-def run_command(cmd, args=None):  # Run the named ApplicationCommand.
+def run_command(cmd, args=None):
+    # Run the named ApplicationCommand.
     raise NotImplementedError()
 
 def set_clipboard(text):
@@ -65,7 +67,7 @@ def get_clipboard():
 
 def load_settings(base_name):
     global _settings
-    _settings = Settings(1111) # TODO2 really load
+    _settings = json.loads(base_name)
     return _settings
 
 def set_timeout(f, timeout_ms=0):
