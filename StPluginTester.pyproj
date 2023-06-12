@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>56224532-0e9c-4b7c-9778-7a7e97187dad</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>test_emul.py</StartupFile>
+    <StartupFile>test_tester.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -30,13 +30,12 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="run_test.py" />
     <Compile Include="sublime.py" />
     <Compile Include="sublime_plugin.py" />
     <Compile Include="test_format.py" />
     <Compile Include="test_stuff.py" />
     <Compile Include="test_notr.py" />
-    <Compile Include="test_emul.py" />
+    <Compile Include="test_tester.py" />
     <Compile Include="..\Notr\notr.py" />
     <Compile Include="..\Notr\table.py" />
     <Compile Include="..\SbotHighlight\sbot_highlight.py" />
@@ -45,18 +44,15 @@
     <Compile Include="..\SbotRender\sbot_render.py" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="files\ross.txt" />
-    <Content Include="files\500denselines.txt" />
-    <Content Include="files\5denselines.txt" />
-    <Content Include="files\almost1mb.txt" />
     <Content Include="files\felix.jpg" />
-    <Content Include="files\mark1.bmp" />
     <Content Include="files\messy.c" />
     <Content Include="files\messy.cs" />
     <Content Include="files\messy.json" />
     <Content Include="files\messy.xml" />
     <Content Include="files\nonascii.txt" />
+    <Content Include="files\ross.txt" />
     <Content Include="files\test_exec.bat" />
+    <Content Include="files\test_settings.sublime-settings" />
     <Content Include="README.md" />
   </ItemGroup>
   <ItemGroup>

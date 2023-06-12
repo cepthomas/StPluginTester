@@ -3,18 +3,15 @@ import sys
 import os
 import unittest
 from unittest.mock import MagicMock
-
 import sublime
 import sublime_plugin
-
-#print('sys.path')
-#print(sys.path)
 
 # This supports execution in VS or from command line but doesn't support intellisense.
 from Notr import notr
 from Notr import table
 
-# This (sometimes?) supports intellisense but fails to execute with "attempted relative import with no known parent package". It's a mystery.
+# This (sometimes?) supports intellisense but fails to execute with "attempted relative import with no known parent package".
+# It's a mystery.
 #from ..Notr import notr
 
 

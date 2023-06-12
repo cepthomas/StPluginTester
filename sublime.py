@@ -1,9 +1,7 @@
 import os
 import sys
 import json
-
-
-# TODO throw exc for unimplemented args.
+import time
 
 
 #---------------- Added items to support emulation and debug --------------------------
@@ -24,6 +22,12 @@ def _next_view_id():
     _view_id += 1
     return _view_id
 
+def _reset():
+    global _settings, _clipboard, _window, _view_id
+    _settings = None
+    _clipboard = ''
+    _window = None
+    _view_id = 0
 
 #---------------- sublime.definitions --------------------------
 
@@ -81,6 +85,7 @@ def load_settings(base_name):
 
 def set_timeout(f, timeout_ms=0):
     # Schedules a function to be called in the future. Sublime Text will block while the function is running.
+    time.sleep(float(timeout_ms) / 1000.0)
     f()
 
 def active_window():
@@ -153,10 +158,11 @@ class View():
     def run_command(self, cmd, args=None):
         # Run the named TextCommand 
         # run_command("goto_line", {"line": line})
-        pass # TODO2
+        raise NotImplementedError()
 
     def sel(self):
-        return self._selection
+        # return self._selection
+        raise NotImplementedError()
 
     def set_status(self, key, value):
         _etrace(f'set_status(): key:{key} value:{value}')
@@ -198,33 +204,27 @@ class View():
         else:
             raise ValueError()
 
-    ##### string ops
-
-    def insert(self, edit, point, text):
-        self._validate(point)
-        self._buffer = self._buffer[:point] + text + self._buffer[point:]
-
-    def replace(self, edit, region, text):
-        self._validate(region)
-        self._buffer = self._buffer[:region.a] + text + self._buffer[region.b:]
-
-    def split_by_newlines(self, region):
-        self._validate(region)
-        #split_by_newlines(region: Region) ret: list[Region]  Splits the region up such that each Region returned exists on exactly one line.
-        return [region] # TODO2
-
-    ##### find/replace        
+    ##### find ops
 
     def find(self, pattern, start_pt, flags=0):
+        # find(pattern: str, start_pt: Point, flags=FindFlags.NONE)
+
+        if flags != 0:
+            raise NotImplementedError('args')
+
         self._validate(start_pt)
         # find(pattern: str, start_pt: Point, flags=FindFlags.NONE) ret: Region
         # pattern: The regex or literal pattern to search by.
         # start_pt: The Point to start searching from.
         # flags: Controls various behaviors of find. See FindFlags.
-        return None # Region TODO2
+        return None # Region TODO
 
     def find_all(self, pattern, flags=0, fmt=None, extractions=None):
-        return [] # [Region] TODO2
+        # find_all(pattern: str, flags=FindFlags.NONE, fmt: Optional[str] = None, extractions: Optional[list[str]] = None)
+        if flags != 0 or fmt is not None or extractions is not None:
+            raise NotImplementedError('args')
+
+        return [] # [Region] TODO
 
     def substr(self, x):
         # The string at the Point or within the Region provided.
@@ -233,18 +233,6 @@ class View():
             return self._buffer[x.a:x.b]
         else: # Point
             return self._buffer[x]
-
-    def _find_word(self, start_pt, end_pt):
-        # Find space/nl/start before
-        # Find space/nl/end after
-        # find(pattern: str, start_pt: Point, flags=FindFlags.NONE) ret: Region
-        return Region() # TODO1
-
-    def _find_line(self, start_pt, end_pt, incl_line_end):
-        # Find nl/start before
-        # Find nl/end after
-        # find(pattern: str, start_pt: Point, flags=FindFlags.NONE) ret: Region
-        return Region() # TODO1
 
     def word(self, x):
         # The word Region that contains the Point. If a Region is provided its beginning/end are expanded to word boundaries.
@@ -270,23 +258,40 @@ class View():
         else: # Point
             return self._find_line(x, x, True)
 
+    ##### edit ops
+
+    def insert(self, edit, point, text):
+        self._validate(point)
+        self._buffer = self._buffer[:point] + text + self._buffer[point:]
+
+    def replace(self, edit, region, text):
+        self._validate(region)
+        self._buffer = self._buffer[:region.a] + text + self._buffer[region.b:]
+
+    ##### utilities
+
+    def split_by_newlines(self, region):
+        self._validate(region)
+        b = self._buffer[region.a:region.b]
+        return b.split('\n')
+
     ##### scopes and regions
 
     def scope_name(self, point):
-        self._validate(point)
-        return 'TODO3'
+        raise NotImplementedError()
 
     def style_for_scope(self, scope):
-        return 'TODO3'
+        raise NotImplementedError()
 
     def add_regions(self, key, regions, scope="", icon="", flags=0):
-        self._regions.extend(regions) # TODO2 key
+        # self._regions.extend(regions) # key
+        raise NotImplementedError()
 
     def get_regions(self, key):
-        return self._regions # TODO2 key
+        raise NotImplementedError()
 
     def erase_regions(self, key):
-        pass # TODO2 key
+        raise NotImplementedError()
 
     ##### helpers
 
@@ -297,6 +302,24 @@ class View():
         else: # Point
             if x > len(self._buffer):
                 raise ValueError()
+
+    def _find_word(self, start_pt, end_pt):
+        # Find space/nl/start before
+        # Find space/nl/end after
+        ind = start_pt
+
+        while self._buffer[ind] not in [' ', '\n']:
+
+            ind -= 1
+
+
+        return Region() # TODO
+
+    def _find_line(self, start_pt, end_pt, incl_line_end):
+        # Find nl/start before
+        # Find nl/end after
+
+        return Region() # TODO
 
 
 #---------------- sublime.Window --------------------------
@@ -341,12 +364,15 @@ class Window():
         return _settings
 
     def run_command(self, cmd, args=None):
-        # Run the named WindowCommand with the (optional) given args. TODO3
+        # Run the named WindowCommand with the (optional) given args.
         # This method is able to run any sort of command, dispatching the command via input focus.
         # run_command("goto_line", {"line": line})
         raise NotImplementedError()
 
     def new_file(self, flags=0, syntax=""):
+        if flags != 0 or syntax != '':
+            raise NotImplementedError('args')
+
         view = View(_next_view_id())
         view._file_name = ''
         view._window = self
@@ -354,6 +380,9 @@ class Window():
         return view
 
     def open_file(self, fname, flags=0, group=-1):
+        if flags != 0 or group != -1:
+            raise NotImplementedError('args')
+
         with open(fname, 'r') as file:
             view = View(_next_view_id())
             view._file_name = fname # hack
@@ -372,7 +401,7 @@ class Window():
         for i in range(len(self._views)):
             if self.views[i].id() == view.id():
                 self._active_view = i
-                # TODO maybe on_activated()?
+                # Maybe execute on_activated()?
                 break;
 
     def get_view_index(self, view):
@@ -544,7 +573,7 @@ class Selection():
 
 #---------------- sublime.Settings --------------------------
 
-class Settings():  #TODO2
+class Settings():
 
     def __init__(self):
         self.settings_storage = {}
@@ -567,7 +596,7 @@ class Settings():  #TODO2
 
 #---------------- sublime.Syntax --------------------------
 
-class Syntax():  #TODO3
+class Syntax():
 
     def __init__(self, path, name, hidden, scope):
         self.path = path

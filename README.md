@@ -54,7 +54,7 @@ C:\Users\<user>\AppData\Roaming\Sublime Text\Packages
 - `xxx.py` is the actual code under test.
 
 ## Sublime API Emulation
-The emulation modules implement a simple subset of the ST API. The intent is to minimize the amount of mocking
+The emulation modules implement a simple subset of the `sublime.py` and `sublime_plugin.py` API. The intent is to minimize the amount of mocking
 required. This includes things like loading settings, creating Views and rudimentary management by Window.
 Also basic text buffer management by View: insert, find, replace, etc. The more complex functions are not
 supported and expected to be emulated using mocks.
@@ -64,6 +64,20 @@ General categories:
 - function partially implemented - unused args will throw `NotImplementedError`.
 - function defined in emulated API but not implemented - will throw `NotImplementedError`.
 - function not defined in emulated API - lint-time or run-time error.
+
+Note that `sublime_api` generally returns garbage if you try to access outside of the view buffer area.
+The client needs to protect themselves. This tester will throw `ValueError` to help you locate these.
+
+Also VS does do python exception processing very well:
+>> So the problem is that the checkboxes in the Exceptions tool window correspond to "on throw" exception filters
+>> (i.e. raise as soon as exception happens), but the debugger actually has two other categories: "on unhandled"
+>> (when it escapes out of the top-level code) and "on user-unhandled" (when it escapes from library code to your code).
+>> And by default, VS enables the latter for all Python exceptions, hence why it's breaking.
+>>
+>> It used to be that the Exceptions window had a mode that showed multiple checkboxes allowing to tweak this stuff,
+>> but it doesn't look like that's there anymore. We need to investigate and figure out how the filters work with the new UX.
+
+_This kind of implies that you shouldn't raise exceptions for normal error processing, only to catch lib/sys thrown._
 
 
 
