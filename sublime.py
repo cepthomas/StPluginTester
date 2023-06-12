@@ -3,6 +3,9 @@ import sys
 import json
 
 
+# TODO throw exc for unimplemented args.
+
+
 #---------------- Added items to support emulation and debug --------------------------
 # Added stuff has underscore _name.
 
@@ -17,6 +20,7 @@ def _etrace(*args):
     print(f'EMU {s}')
 
 def _next_view_id():
+    global _view_id
     _view_id += 1
     return _view_id
 
@@ -60,14 +64,19 @@ def run_command(cmd, args=None):
     raise NotImplementedError()
 
 def set_clipboard(text):
+    global _clipboard
     _clipboard = text
 
 def get_clipboard():
+    global _clipboard
     return _clipboard
 
 def load_settings(base_name):
     global _settings
-    _settings = json.loads(base_name)
+    if _settings is None: # lazy init
+        with open(base_name) as fp:
+            _settings = Settings()
+            _settings.settings_storage = json.load(fp)
     return _settings
 
 def set_timeout(f, timeout_ms=0):
@@ -101,6 +110,9 @@ class View():
 
     def __bool__(self):
         return self._view_id != 0
+
+    def __repr__(self):
+        return f'View({self._view_id})'
 
     def id(self):
         return self._view_id
@@ -158,7 +170,7 @@ class View():
         col = 0
         for ind in range(point):
             col += 1
-            if self._buffer[ind] = '\n':
+            if self._buffer[ind] == '\n':
                 row += 1
                 col = 0
         return (row, col)
@@ -177,17 +189,20 @@ class View():
             else: # bump
                 point += 1
                 col_i += 1
-                if self._buffer[ind] = '\n':
+                if self._buffer[ind] == '\n':
                     row_i += 1
                     col_i = 0
 
-        return point if found else -1
+        if found:
+            return point           
+        else:
+            raise ValueError()
 
     ##### string ops
 
     def insert(self, edit, point, text):
         self._validate(point)
-        self._buffer = self._buffer[:pos] + text + self._buffer[pos:]
+        self._buffer = self._buffer[:point] + text + self._buffer[point:]
 
     def replace(self, edit, region, text):
         self._validate(region)
@@ -277,16 +292,17 @@ class View():
 
     def _validate(self, x):
         if isinstance(x, Region):
-            if x.a >= len(self._buffer) or if x.b >= len(self._buffer) or if x.a < 0 or if x.b < 0:
+            if x.a >= len(self._buffer) or x.b >= len(self._buffer) or x.a < 0 or x.b < 0:
                 raise ValueError()
         else: # Point
-            if x >= len(self._buffer):
+            if x > len(self._buffer):
                 raise ValueError()
 
 
 #---------------- sublime.Window --------------------------
 
 class Window():
+
     def __init__(self, id):
         self._id = id
         self._settings = None
@@ -294,8 +310,14 @@ class Window():
         self._active_view = -1 # index into _views
         self._project_data = None
 
+    def __repr__(self):
+        return f'Window({self._id})'
+
     def id(self):
         return self._id
+
+    def is_valid(self):
+        return self._id is not None
 
     def active_view(self):
         if self._active_view >= 0:
@@ -326,17 +348,23 @@ class Window():
 
     def new_file(self, flags=0, syntax=""):
         view = View(_next_view_id())
+        view._file_name = ''
+        view._window = self
+        self._views.append(view)
         return view
 
     def open_file(self, fname, flags=0, group=-1):
-        view = View(_next_view_id())
         with open(fname, 'r') as file:
+            view = View(_next_view_id())
+            view._file_name = fname # hack
+            view._window = self
             view.insert(None, 0, file.read())
-        return view
+            self._views.append(view)
+            return view
 
     def find_open_file(self, fname):
         for v in self._views:
-            if v.file_name == fname:
+            if v.file_name() == fname:
                 return v
         return None
 
@@ -344,11 +372,12 @@ class Window():
         for i in range(len(self._views)):
             if self.views[i].id() == view.id():
                 self._active_view = i
+                # TODO maybe on_activated()?
                 break;
 
     def get_view_index(self, view):
         for i in range(len(self._views)):
-            if self.views[i].id() == view.id():
+            if self.views()[i].id() == view.id():
                 return i
 
     def views(self):
@@ -371,7 +400,7 @@ class Edit:
         self.edit_token = token
 
     def __repr__(self):
-        return f'Edit({self.edit_token!r})'
+        return f'Edit({self.edit_token})'
 
 
 #---------------- sublime.Region --------------------------
@@ -384,19 +413,16 @@ class Region():
         self.b = b
         self.xpos = xpos
 
-     def __str__(self):
-         return "(" + str(self.a) + ", " + str(self.b) + ")"
-
-     def __repr__(self):
-         return "(" + str(self.a) + ", " + str(self.b) + ")"
+    def __repr__(self):
+        return f'Region({self.a, self.b})'
 
     def __len__(self):
         return self.size()
 
-     def __eq__(self, rhs):
+    def __eq__(self, rhs):
          return isinstance(rhs, Region) and self.a == rhs.a and self.b == rhs.b
 
-     def __lt__(self, rhs):
+    def __lt__(self, rhs):
          lhs_begin = self.begin()
          rhs_begin = rhs.begin()
 
@@ -487,6 +513,9 @@ class Selection():
     def __bool__(self):
        return self.view_id != 0
 
+    def __repr__(self):
+        return f'Selection({self.view_id})'
+
     def is_valid(self):
         return self.view_id != 0
 
@@ -517,9 +546,14 @@ class Selection():
 
 class Settings():  #TODO2
 
-    def __init__(self, view_id):
-        self.settings_id = view_id
+    def __init__(self):
         self.settings_storage = {}
+
+    def __len__(self):
+        return len(self.settings_storage)
+
+    def __repr__(self):
+        return f'Settings({self.settings_storage})'
 
     def get(self, key, default=None):
         return self.settings_storage.get(key, default)

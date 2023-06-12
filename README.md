@@ -53,12 +53,21 @@ C:\Users\<user>\AppData\Roaming\Sublime Text\Packages
 - `test_xxx.py` is the actual test code.
 - `xxx.py` is the actual code under test.
 
-The emulation modules implement a simple subset of the ST API. Things like Window class managing the Views etc.
-The more complex functions are not supported and expected to be emulated using mocks. They will throw
-a `NotImplementedError`
+## Sublime API Emulation
+The emulation modules implement a simple subset of the ST API. The intent is to minimize the amount of mocking
+required. This includes things like loading settings, creating Views and rudimentary management by Window.
+Also basic text buffer management by View: insert, find, replace, etc. The more complex functions are not
+supported and expected to be emulated using mocks.
+
+General categories:
+- function fully implemented.
+- function partially implemented - unused args will throw `NotImplementedError`.
+- function defined in emulated API but not implemented - will throw `NotImplementedError`.
+- function not defined in emulated API - lint-time or run-time error.
 
 
-Other things to consider:
+
+## Other Things to Consider
 
 It's probably best to do this:
 ```
@@ -85,14 +94,13 @@ from Notr import notr
 
 ## Python Package And Module Management
 
-**This "management" is a nightmare abomination. Clearly designed without consideration of the future
+**This "management" is a huge PIA. Clearly designed without consideration of the future
 and now severely crufty (as is all of python). The lua model is much cleaner and easier to use. /rant**
 
 > ST doesn't load modules like plain python and can cause some surprises. The problem is that sbot_common
 > gets reloaded but it appears to be a different module from the one linked to by the other modules.
 
 This makes handling globals interesting.
-
 
 > To use functions defined in ex.py you either need to import them directly:
 >
