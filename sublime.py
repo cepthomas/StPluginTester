@@ -207,24 +207,33 @@ class View():
     ##### find ops
 
     def find(self, pattern, start_pt, flags=0):
-        # find(pattern: str, start_pt: Point, flags=FindFlags.NONE)
+        region = None
 
+        self._validate(start_pt)
         if flags != 0:
             raise NotImplementedError('args')
 
-        self._validate(start_pt)
-        # find(pattern: str, start_pt: Point, flags=FindFlags.NONE) ret: Region
-        # pattern: The regex or literal pattern to search by.
-        # start_pt: The Point to start searching from.
-        # flags: Controls various behaviors of find. See FindFlags.
-        return None # Region TODO
+        pos = self._buffer.find(pattern, start_pt)
+        return Region(pos, pos + len(pattern)) if pos >= 0 else None
 
     def find_all(self, pattern, flags=0, fmt=None, extractions=None):
-        # find_all(pattern: str, flags=FindFlags.NONE, fmt: Optional[str] = None, extractions: Optional[list[str]] = None)
+        regions = []
+        pt = 0
+
+        self._validate(start_pt)
         if flags != 0 or fmt is not None or extractions is not None:
             raise NotImplementedError('args')
 
-        return [] # [Region] TODO
+        done = False
+        while not done:
+            region = self.find(pattern, pt, flags)
+            if region is not None:
+                regions.append(region)
+                pt = region.b + 1
+            else:
+                done = True
+
+        return regions
 
     def substr(self, x):
         # The string at the Point or within the Region provided.

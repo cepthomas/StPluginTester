@@ -2,7 +2,7 @@
 ### All LL API calls in sublime.py
 # sublime_api.func()
 
-active_window() #no returns?
+active_window() #returns Window
 architecture() #returns same as hl api
 buffers() #no returns?
 cache_path() #returns same as hl api
