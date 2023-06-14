@@ -1,8 +1,9 @@
 import os
-import sys
 import json
 import time
+import string
 
+# https://www.sublimetext.com/docs/api_reference.html
 
 #---------------- Added items to support emulation and debug --------------------------
 # Added stuff has underscore _name.
@@ -12,6 +13,9 @@ _clipboard = ''
 _window = None
 _view_id = 0
 
+_FIND_WORD = 1
+_FIND_LINE = 2
+_FIND_FULL_LINE = 3
 
 def _etrace(*args):
     s = ' | '.join(map(str, args))
@@ -77,7 +81,7 @@ def get_clipboard():
 
 def load_settings(base_name):
     global _settings
-    if _settings is None: # lazy init
+    if _settings is None:  # lazy init
         with open(base_name) as fp:
             _settings = Settings()
             _settings.settings_storage = json.load(fp)
@@ -132,7 +136,7 @@ class View():
         return False
 
     def close(self):
-        _etrace(f'View.close()')
+        _etrace('View.close()')
         return True
 
     def is_scratch(self):
@@ -167,10 +171,10 @@ class View():
     def set_status(self, key, value):
         _etrace(f'set_status(): key:{key} value:{value}')
 
-
     ##### translation between row/col and index
 
     def rowcol(self, point):
+        # 
         self._validate(point)
         row = 0
         col = 0
@@ -207,8 +211,7 @@ class View():
     ##### find ops
 
     def find(self, pattern, start_pt, flags=0):
-        region = None
-
+        # 
         self._validate(start_pt)
         if flags != 0:
             raise NotImplementedError('args')
@@ -218,18 +221,17 @@ class View():
 
     def find_all(self, pattern, flags=0, fmt=None, extractions=None):
         regions = []
-        pt = 0
+        ind = 0
 
-        self._validate(start_pt)
         if flags != 0 or fmt is not None or extractions is not None:
             raise NotImplementedError('args')
 
         done = False
         while not done:
-            region = self.find(pattern, pt, flags)
+            region = self.find(pattern, ind, flags)
             if region is not None:
                 regions.append(region)
-                pt = region.b + 1
+                ind = region.b + 1
             else:
                 done = True
 
@@ -240,42 +242,44 @@ class View():
         self._validate(x)
         if isinstance(x, Region):
             return self._buffer[x.a:x.b]
-        else: # Point
+        else:  # Point
             return self._buffer[x]
 
     def word(self, x):
         # The word Region that contains the Point. If a Region is provided its beginning/end are expanded to word boundaries.
         self._validate(x)
         if isinstance(x, Region):
-            return self._find_word(x.a, x.b)
-        else: # Point
-            return self._find_word(x, x)
+            return self._find(x.a, x.b, _FIND_WORD)
+        else:  # Point
+            return self._find(x, x, _FIND_WORD)
 
     def line(self, x):
         # Returns The line Region that contains the Point or an expanded Region to the beginning/end of lines, excluding the newline character.
         self._validate(x)
         if isinstance(x, Region):
-            return self._find_line(x.a, x.b, False)
-        else: # Point
-            return self._find_line(x, x, False)
+            return self._find(x.a, x.b, _FIND_LINE)
+        else:  # Point
+            return self._find(x, x, _FIND_LINE)
 
     def full_line(self, x):
         # full_line(x: Region | Point) ret: Region The line that contains the Point or an expanded Region to the beginning/end of lines, including the newline character.
         self._validate(x)
         if isinstance(x, Region):
-            return self._find_line(x.a, x.b, True)
-        else: # Point
-            return self._find_line(x, x, True)
+            return self._find(x.a, x.b, _FIND_FULL_LINE)
+        else:  # Point
+            return self._find(x, x, _FIND_FULL_LINE)
 
     ##### edit ops
 
     def insert(self, edit, point, text):
         self._validate(point)
         self._buffer = self._buffer[:point] + text + self._buffer[point:]
+        return len(text)
 
     def replace(self, edit, region, text):
         self._validate(region)
         self._buffer = self._buffer[:region.a] + text + self._buffer[region.b:]
+        return len(text)
 
     ##### utilities
 
@@ -305,30 +309,52 @@ class View():
     ##### helpers
 
     def _validate(self, x):
+        max = len(self._buffer)
         if isinstance(x, Region):
-            if x.a >= len(self._buffer) or x.b >= len(self._buffer) or x.a < 0 or x.b < 0:
+            if x.a > max or x.b > max or x.a < 0 or x.b < 0:
                 raise ValueError()
-        else: # Point
-            if x > len(self._buffer):
+        else:  # Point
+            if x > max or x < 0:
                 raise ValueError()
 
-    def _find_word(self, start_pt, end_pt):
+    def _find(self, start_pt, end_pt, mode):
+        # Maybe fix order.
+        region = Region(start_pt, end_pt) if start_pt <= end_pt else Region(end_pt, start_pt)
+
         # Find space/nl/start before
-        # Find space/nl/end after
         ind = start_pt
+        done = False
+        while not done:
+            if ind == 0:
+                region.a = ind
+                done = True
+            elif self._buffer[ind] == '\n':
+                region.a = ind + 1
+                done = True
+            elif mode == _FIND_WORD and self._buffer[ind] in string.whitespace:
+                region.a = ind + 1
+                done = True
+            else:
+                ind -= 1
 
-        while self._buffer[ind] not in [' ', '\n']:
+        # Find space/nl/end after
+        ind = end_pt
+        buff_len = len(self._buffer)
+        done = False
+        while not done:
+            if ind >= buff_len:
+                region.b = ind - 1
+                done = True
+            elif self._buffer[ind] == '\n':
+                region.b = ind + 1 if mode == _FIND_FULL_LINE else ind
+                done = True
+            elif mode == _FIND_WORD and self._buffer[ind] in string.whitespace:
+                region.b = ind
+                done = True
+            else:
+                ind += 1
 
-            ind -= 1
-
-
-        return Region() # TODO
-
-    def _find_line(self, start_pt, end_pt, incl_line_end):
-        # Find nl/start before
-        # Find nl/end after
-
-        return Region() # TODO
+        return region
 
 
 #---------------- sublime.Window --------------------------
@@ -339,7 +365,7 @@ class Window():
         self._id = id
         self._settings = None
         self._views = []
-        self._active_view = -1 # index into _views
+        self._active_view = -1  # index into _views
         self._project_data = None
 
     def __repr__(self):
@@ -394,7 +420,7 @@ class Window():
 
         with open(fname, 'r') as file:
             view = View(_next_view_id())
-            view._file_name = fname # hack
+            view._file_name = fname  # hack
             view._window = self
             view.insert(None, 0, file.read())
             self._views.append(view)
@@ -411,7 +437,7 @@ class Window():
             if self.views[i].id() == view.id():
                 self._active_view = i
                 # Maybe execute on_activated()?
-                break;
+                break
 
     def get_view_index(self, view):
         for i in range(len(self._views)):
@@ -458,16 +484,16 @@ class Region():
         return self.size()
 
     def __eq__(self, rhs):
-         return isinstance(rhs, Region) and self.a == rhs.a and self.b == rhs.b
+        return isinstance(rhs, Region) and self.a == rhs.a and self.b == rhs.b
 
     def __lt__(self, rhs):
-         lhs_begin = self.begin()
-         rhs_begin = rhs.begin()
+        lhs_begin = self.begin()
+        rhs_begin = rhs.begin()
 
-         if lhs_begin == rhs_begin:
-             return self.end() < rhs.end()
-         else:
-             return lhs_begin < rhs_begin
+        if lhs_begin == rhs_begin:
+            return self.end() < rhs.end()
+        else:
+            return lhs_begin < rhs_begin
 
     def empty(self):
         return self.a == self.b
@@ -531,25 +557,25 @@ class Selection():
         return len(self.regions)
 
     def __getitem__(self, index):
-        if index >= 0  and index < len(self.regions):
+        if index >= 0 and index < len(self.regions):
             return self.regions[index]
         else:
             raise IndexError()
 
     def __delitem__(self, index):
-        if index >= 0  and index < len(self.regions):
+        if index >= 0 and index < len(self.regions):
             self.regions.remove(index)
         else:
             raise IndexError()
 
     def __eq__(self, rhs):
-       return rhs is not None and list(self) == list(rhs)
+        return rhs is not None and list(self) == list(rhs)
 
     def __lt__(self, rhs):
-       return rhs is not None and list(self) < list(rhs)
+        return rhs is not None and list(self) < list(rhs)
 
     def __bool__(self):
-       return self.view_id != 0
+        return self.view_id != 0
 
     def __repr__(self):
         return f'Selection({self.view_id})'
@@ -614,4 +640,4 @@ class Syntax():
         self.scope = scope
 
     def name(self):
-       return self.name
+        return self.name

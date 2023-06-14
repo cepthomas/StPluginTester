@@ -1,4 +1,4 @@
-# Sublime Text Plugin Unit Tester
+# Sublime Text Plugin Unit Tester  TODO relocate away from Packages? like Dev.
 
 - Uses Visual Studio 2022 to develop Sublime Text plugins. My preferred tool for python dev.
 - Uses python unittest + mocks to debug plugins using VS.
