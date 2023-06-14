@@ -39,7 +39,7 @@ class TestNotr(unittest.TestCase):
         self.view.sel = MagicMock(return_value=sel)
 
         # Mock syntax.
-        syntax = sublime.Syntax()
+        syntax = sublime.Syntax('', 'Notr', False, '')
         syntax.name = MagicMock(return_value='Notr')
         self.view.syntax = MagicMock(return_value=syntax)
 

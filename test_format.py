@@ -24,7 +24,7 @@ class TestFormat(unittest.TestCase):
         with open(r'.\files\messy.json', 'r') as fp:
             # The happy path.
             s = fp.read()
-            cmd = format.SbotFormatJsonCommand(v)
+            cmd = sbot_format.SbotFormatJsonCommand(v)
             res = cmd._do_one(s)
             self.assertEqual(res[:50], '{\n    "MarkPitch": {\n        "Original": 0,\n      ')
 
@@ -40,7 +40,7 @@ class TestFormat(unittest.TestCase):
         with open(r'.\files\messy.xml', 'r') as fp:
             # The happy path.
             s = fp.read()
-            cmd = format.SbotFormatXmlCommand(v)
+            cmd = sbot_format.SbotFormatXmlCommand(v)
             res = cmd._do_one(s)
             self.assertEqual(res[100:150], 'nType="Anti-IgG (PEG)" TestSpec="08 ABSCR4 IgG" Du')
 
