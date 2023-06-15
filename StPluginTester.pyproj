@@ -4,9 +4,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>56224532-0e9c-4b7c-9778-7a7e97187dad</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>test_notr.py</StartupFile>
-    <SearchPath>
-    </SearchPath>
+    <StartupFile>test_format.py</StartupFile>
+    <SearchPath>..\..\..\Users\cepth\AppData\Roaming\Sublime Text\Packages</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>StPluginTester</Name>
@@ -19,7 +18,7 @@
     <TestFramework>unittest</TestFramework>
     <UnitTestPattern>test_*.py</UnitTestPattern>
     <UnitTestRootDirectory>.</UnitTestRootDirectory>
-    <IsWindowsApplication>False</IsWindowsApplication>
+    <IsWindowsApplication>True</IsWindowsApplication>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -30,6 +29,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="sbot_common.py" />
     <Compile Include="sublime.py" />
     <Compile Include="sublime_plugin.py" />
     <Compile Include="test_logger.py" />

@@ -4,8 +4,9 @@ import unittest
 from unittest.mock import MagicMock
 import sublime
 import sublime_plugin
-from SbotALogger import sbot_logger as slogger
-from SbotALogger import sbot_common as sc
+import sbot_common as sc
+
+from SbotALogger import sbot_logger
 
 
 #-----------------------------------------------------------------------------------
@@ -18,10 +19,10 @@ class TestLogger(unittest.TestCase):
             "ignore_cats": [],
         }
         sublime.load_settings = MagicMock(return_value=mock_settings)
-        slogger.plugin_loaded()
+        sbot_logger.plugin_loaded()
 
     def tearDown(self):
-        slogger.plugin_unloaded()
+        sbot_logger.plugin_unloaded()
         pass
 
     def test_log_exception(self):
@@ -32,7 +33,7 @@ class TestLogger(unittest.TestCase):
         try:
             _force_exc()
         except Exception as e:
-            slogger._notify_exception(e, 'value', e.__traceback__)
+            sbot_logger._notify_exception(e, 'value', e.__traceback__)
 
     def test_simple(self):
         # Do the test.

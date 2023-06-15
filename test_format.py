@@ -3,11 +3,11 @@ import unittest
 from unittest.mock import MagicMock
 import sublime
 import sublime_plugin
-# from sbot_common_src import *
+
 #import SbotFormat.sbot_format as format
 from SbotFormat import sbot_format
 
-
+print(sys.path)
 
 #-----------------------------------------------------------------------------------
 class TestFormat(unittest.TestCase):

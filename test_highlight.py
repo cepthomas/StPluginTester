@@ -4,7 +4,8 @@ import unittest
 from unittest.mock import MagicMock
 import sublime
 import sublime_plugin
-from SbotHighlight import sbot_highlight as hl
+
+from SbotHighlight import sbot_highlight
 
 
 #-----------------------------------------------------------------------------------
@@ -28,7 +29,7 @@ class TestHighlight(unittest.TestCase):
         view.file_name = MagicMock(return_value='file123.abc')
 
         # Do the test.
-        hl_vals = hl._get_hl_vals(view, True)
+        hl_vals = sbot_highlight._get_hl_vals(view, True)
         self.assertIsNotNone(hl_vals)
 
 

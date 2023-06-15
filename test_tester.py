@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 import sublime
 import sublime_plugin
 
-# Tests for the sublime api emulation non-trivial parts.
+# Tests for some of the sublime api emulation.
 
 
 #-----------------------------------------------------------------------------------
