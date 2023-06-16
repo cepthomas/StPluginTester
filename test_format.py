@@ -4,7 +4,6 @@ from unittest.mock import MagicMock
 import sublime
 import sublime_plugin
 
-#import SbotFormat.sbot_format as format
 from SbotFormat import sbot_format
 
 print(sys.path)
