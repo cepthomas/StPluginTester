@@ -4,8 +4,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>56224532-0e9c-4b7c-9778-7a7e97187dad</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>test_format.py</StartupFile>
-    <SearchPath>$(APPDATA)\Sublime Text\Packages</SearchPath>
+    <StartupFile>test_notr.py</StartupFile>
+    <SearchPath>..\..\..\Users\cepth\AppData\Roaming\Sublime Text\Packages</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>StPluginTester</Name>
