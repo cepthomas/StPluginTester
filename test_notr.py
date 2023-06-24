@@ -44,7 +44,7 @@ class TestNotr(unittest.TestCase):
         #{ "scope": "meta.table.header", "background": "deepskyblue" },
 
 
-        test_text = [
+        test_text = '\n'.join([
             'notable 1',
             'notable 2',
             'notable 3',
@@ -61,20 +61,30 @@ class TestNotr(unittest.TestCase):
             'notable 7',
             'notable 8',
             'notable 9',
-            ]
+            ])
 
         view = sublime.View(600)
-        view.insert(None, 0, '\n'.join(test_text))
+        view.insert(None, 0, test_text)
+
+        # Some basic tests.
+        self.assertEqual(view.rowcol(24), (2, 4))
+        self.assertEqual(view.rowcol(148), (8,15))
+        self.assertEqual(view.rowcol(239), (11, 31))
+        self.assertEqual(view.rowcol(240), (12, 0))
+        self.assertEqual(view.text_point(2, 4), 24)
+        self.assertEqual(view.text_point(8,15), 148)
+        self.assertEqual(view.text_point(11, 31), 239)
+        self.assertEqual(view.text_point(12, 0), 240)
+
         sel = sublime.Selection(view.id())
-        #sel.add(sublime.Region(25, 29)) # before table
         sel.add(sublime.Region(73, 77)) # in table
         view.sel = MagicMock(return_value=sel)
 
         def scope_name(*args, **kwargs):
             pos = args[0]
-            if pos >= 28 and pos <= 53:
+            if pos >= 50 and pos <= 77:
                 return 'text.notr meta.table.header'
-            elif pos >= 54 and pos <= 189:
+            elif pos >= 78 and pos <= 239:
                 return 'text.notr meta.table'
             else:
                 return 'text.notr'
@@ -85,8 +95,10 @@ class TestNotr(unittest.TestCase):
         #edit = sublime.Edit('test')
         cmd = table.TableFitCommand(view)
         cmd.run(None)
+        reg = cmd.get_table_region()
 
-
+        newtext = view.substr(reg)
+        self.assertEqual(newtext, 'eeeee')
 
     #@unittest.skip
     def test_on_init(self):

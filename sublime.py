@@ -3,7 +3,12 @@ import json
 import time
 import string
 
+# A crude emulation of the ST api solely for the purpose of debugging.
 # https://www.sublimetext.com/docs/api_reference.html
+
+# All row/column are 0-based. Client is responsible for converting for UI preference.
+# Position is always 0-based.
+
 
 #---------------- Added items to support emulation and debug --------------------------
 # Added stuff has underscore _name.
@@ -32,6 +37,25 @@ def _reset():
     _clipboard = ''
     _window = None
     _view_id = 0
+
+def _clamp(view, x):
+    ''' Returns a valid Region within the buffer. '''
+    max = len(view._buffer) - 1
+
+    if isinstance(x, Region):
+        a = max(0, x.a)
+        b = min(x.a, max)
+    else:  # Point
+        a = max(0, x)
+        b = min(x, max)
+
+    if a > b:
+        z = a
+        a = b
+        b = z
+
+    return Region(a, b)
+
 
 #---------------- sublime.definitions --------------------------
 
@@ -173,35 +197,38 @@ class View():
 
     ##### translation between row/col and index
 
-    def rowcol(self, point):
-        # 
+    def rowcol(self, point):XXX
+        # Get row and column for the point.
         self._validate(point)
         row = 0
         col = 0
-        for ind in range(point):
-            col += 1
-            if self._buffer[ind] == '\n':
+        for index in range(point):
+            if self._buffer[index] == '\n':
                 row += 1
                 col = 0
+            else:
+                col += 1
         return (row, col)
 
-    def text_point(self, row, col):
+    def text_point(self, row, col):XXX
         # Calculates the character offset of the given, 0-based, row and col
         point = 0
         row_i = 0
         col_i = 0
         found = False
 
-        for ind in range(len(self._buffer)):
+        for index in range(len(self._buffer)):
             if row_i == row and col_i == col:
                 found = True
                 break
             else: # bump
-                point += 1
-                col_i += 1
-                if self._buffer[ind] == '\n':
+                if self._buffer[index] == '\n':
+                    point += 1
                     row_i += 1
                     col_i = 0
+                else:
+                    point += 1
+                    col_i += 1
 
         if found:
             return point           
@@ -210,8 +237,7 @@ class View():
 
     ##### find ops
 
-    def find(self, pattern, start_pt, flags=0):
-        # 
+    def find(self, pattern, start_pt, flags=0):XXX
         self._validate(start_pt)
         if flags != 0:
             raise NotImplementedError('args')
@@ -219,7 +245,7 @@ class View():
         pos = self._buffer.find(pattern, start_pt)
         return Region(pos, pos + len(pattern)) if pos >= 0 else None
 
-    def find_all(self, pattern, flags=0, fmt=None, extractions=None):
+    def find_all(self, pattern, flags=0, fmt=None, extractions=None):XXX
         regions = []
         ind = 0
 
@@ -237,7 +263,7 @@ class View():
 
         return regions
 
-    def substr(self, x):
+    def substr(self, x):XXX
         # The string at the Point or within the Region provided.
         self._validate(x)
         if isinstance(x, Region):
@@ -245,7 +271,7 @@ class View():
         else:  # Point
             return self._buffer[x]
 
-    def word(self, x):
+    def word(self, x):XXX
         # The word Region that contains the Point. If a Region is provided its beginning/end are expanded to word boundaries.
         self._validate(x)
         if isinstance(x, Region):
@@ -253,7 +279,7 @@ class View():
         else:  # Point
             return self._find(x, x, _FIND_WORD)
 
-    def line(self, x):
+    def line(self, x):XXX
         # Returns The line Region that contains the Point or an expanded Region to the beginning/end of lines, excluding the newline character.
         self._validate(x)
         if isinstance(x, Region):
@@ -261,7 +287,7 @@ class View():
         else:  # Point
             return self._find(x, x, _FIND_LINE)
 
-    def full_line(self, x):
+    def full_line(self, x):XXX
         # full_line(x: Region | Point) ret: Region The line that contains the Point or an expanded Region to the beginning/end of lines, including the newline character.
         self._validate(x)
         if isinstance(x, Region):
@@ -271,19 +297,19 @@ class View():
 
     ##### edit ops
 
-    def insert(self, edit, point, text):
+    def insert(self, edit, point, text):XXX
         self._validate(point)
         self._buffer = self._buffer[:point] + text + self._buffer[point:]
         return len(text)
 
-    def replace(self, edit, region, text):
+    def replace(self, edit, region, text):XXX
         self._validate(region)
         self._buffer = self._buffer[:region.a] + text + self._buffer[region.b:]
         return len(text)
 
     ##### utilities
 
-    def split_by_newlines(self, region):
+    def split_by_newlines(self, region):XXX
         self._validate(region)
         b = self._buffer[region.a:region.b]
         return b.split('\n')
@@ -309,6 +335,7 @@ class View():
     ##### helpers
 
     def _validate(self, x):
+        ''' Returns a valid Region within the buffer. '''
         max = len(self._buffer)
         if isinstance(x, Region):
             if x.a > max or x.b > max or x.a < 0 or x.b < 0:
@@ -317,7 +344,7 @@ class View():
             if x > max or x < 0:
                 raise ValueError()
 
-    def _find(self, start_pt, end_pt, mode):
+    def _find(self, start_pt, end_pt, mode):XXX
         # Maybe fix order.
         region = Region(start_pt, end_pt) if start_pt <= end_pt else Region(end_pt, start_pt)
 
