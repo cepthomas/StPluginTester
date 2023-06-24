@@ -3,11 +3,12 @@ import json
 import time
 import string
 
-# A crude emulation of the ST api solely for the purpose of debugging.
-# https://www.sublimetext.com/docs/api_reference.html
+# A crude emulation of the ST api solely for the purpose of debugging plugins.
+# Conforms partly to https://www.sublimetext.com/docs/api_reference.html.
 
 # All row/column are 0-based. Client is responsible for converting for UI preference.
 # Position is always 0-based.
+# Some guessing as to how ST validates args - seems to be limiting not throw.
 
 
 #---------------- Added items to support emulation and debug --------------------------
@@ -17,6 +18,9 @@ _settings = None
 _clipboard = ''
 _window = None
 _view_id = 0
+
+_throw_for_bad_call = True
+
 
 _FIND_WORD = 1
 _FIND_LINE = 2
@@ -38,23 +42,41 @@ def _reset():
     _window = None
     _view_id = 0
 
-def _clamp(view, x):
-    ''' Returns a valid Region within the buffer. '''
-    max = len(view._buffer) - 1
+def _validate(view, x, allow_empty=False):
+    '''
+    Checks arg for validity otherwise throws.
+    Returns a valid ordered Region within 0 to max_val inclusive.
+    '''
+    if view._buffer is None:
+        raise ValueError('_buffer is None')
+    if not allow_empty and len(view._buffer) == 0:
+        raise ValueError('_buffer is empty')
 
+    max_val = max(0, len(view._buffer) - 1)
     if isinstance(x, Region):
-        a = max(0, x.a)
-        b = min(x.a, max)
+        if x.a > max_val or x.b > max_val or x.a < 0 or x.b < 0:
+            raise ValueError('region out of range')
     else:  # Point
-        a = max(0, x)
-        b = min(x, max)
+        if x > max_val or x < 0:
+            raise ValueError('point out of range')
 
+    # Gen output.
+    a = max(0, x.a) if isinstance(x, Region) else max(0, x)
+    b = min(x.a, max_val) if isinstance(x, Region) else min(x, max_val)
     if a > b:
-        z = a
-        a = b
-        b = z
-
+        a, b = b, a
     return Region(a, b)
+
+
+
+#def _clamp(view, x):
+#     ''' Returns a valid ordered Region within 0 to max_val inclusive. '''
+#     max_val = len(view._buffer) - 1 # TODO empty or null buffer.
+#     a = max(0, x.a) if isinstance(x, Region) else max(0, x)
+#     b = min(x.a, max_val) if isinstance(x, Region) else min(x, max_val)
+#     if a > b:
+#         a, b = b, a
+#     return Region(a, b)
 
 
 #---------------- sublime.definitions --------------------------
@@ -197,9 +219,9 @@ class View():
 
     ##### translation between row/col and index
 
-    def rowcol(self, point):XXX
+    def rowcol(self, point): # XXX val view/bufflen/pt - throw?
         # Get row and column for the point.
-        self._validate(point)
+        _validate(self, point)
         row = 0
         col = 0
         for index in range(point):
@@ -210,7 +232,7 @@ class View():
                 col += 1
         return (row, col)
 
-    def text_point(self, row, col):XXX
+    def text_point(self, row, col): # XXX r/c -> val view/bufflen/pt - throw?
         # Calculates the character offset of the given, 0-based, row and col
         point = 0
         row_i = 0
@@ -237,15 +259,15 @@ class View():
 
     ##### find ops
 
-    def find(self, pattern, start_pt, flags=0):XXX
-        self._validate(start_pt)
+    def find(self, pattern, start_pt, flags=0): # XXX if view/bufflen/pt> (-1, -1)
+        _validate(self, start_pt)
         if flags != 0:
             raise NotImplementedError('args')
 
         pos = self._buffer.find(pattern, start_pt)
         return Region(pos, pos + len(pattern)) if pos >= 0 else None
 
-    def find_all(self, pattern, flags=0, fmt=None, extractions=None):XXX
+    def find_all(self, pattern, flags=0, fmt=None, extractions=None): # XXX if view/bufflen/pt>
         regions = []
         ind = 0
 
@@ -263,33 +285,33 @@ class View():
 
         return regions
 
-    def substr(self, x):XXX
-        # The string at the Point or within the Region provided.
-        self._validate(x)
+    def substr(self, x): # XXX x clamp
+        # The char at the Point or within the Region provided.
+        _validate(self, x)
         if isinstance(x, Region):
             return self._buffer[x.a:x.b]
         else:  # Point
             return self._buffer[x]
 
-    def word(self, x):XXX
+    def word(self, x): # XXX x
         # The word Region that contains the Point. If a Region is provided its beginning/end are expanded to word boundaries.
-        self._validate(x)
+        _validate(self, x)
         if isinstance(x, Region):
             return self._find(x.a, x.b, _FIND_WORD)
         else:  # Point
             return self._find(x, x, _FIND_WORD)
 
-    def line(self, x):XXX
+    def line(self, x): # XXX x
         # Returns The line Region that contains the Point or an expanded Region to the beginning/end of lines, excluding the newline character.
-        self._validate(x)
+        _validate(self, x)
         if isinstance(x, Region):
             return self._find(x.a, x.b, _FIND_LINE)
         else:  # Point
             return self._find(x, x, _FIND_LINE)
 
-    def full_line(self, x):XXX
+    def full_line(self, x): # XXX x
         # full_line(x: Region | Point) ret: Region The line that contains the Point or an expanded Region to the beginning/end of lines, including the newline character.
-        self._validate(x)
+        _validate(self, x)
         if isinstance(x, Region):
             return self._find(x.a, x.b, _FIND_FULL_LINE)
         else:  # Point
@@ -297,22 +319,22 @@ class View():
 
     ##### edit ops
 
-    def insert(self, edit, point, text):XXX
-        self._validate(point)
+    def insert(self, edit, point, text): # XXX pt
+        point = _validate(self, point, allow_empty=True).a # allow insert in empty
         self._buffer = self._buffer[:point] + text + self._buffer[point:]
         return len(text)
 
-    def replace(self, edit, region, text):XXX
-        self._validate(region)
+    def replace(self, edit, region, text): # XXX reg
+        _validate(self, region)
         self._buffer = self._buffer[:region.a] + text + self._buffer[region.b:]
         return len(text)
 
     ##### utilities
 
-    def split_by_newlines(self, region):XXX
-        self._validate(region)
+    def split_by_newlines(self, region): # XXX reg
+        _validate(self, region)
         b = self._buffer[region.a:region.b]
-        return b.split('\n')
+        return b.splitlines()
 
     ##### scopes and regions
 
@@ -334,17 +356,7 @@ class View():
 
     ##### helpers
 
-    def _validate(self, x):
-        ''' Returns a valid Region within the buffer. '''
-        max = len(self._buffer)
-        if isinstance(x, Region):
-            if x.a > max or x.b > max or x.a < 0 or x.b < 0:
-                raise ValueError()
-        else:  # Point
-            if x > max or x < 0:
-                raise ValueError()
-
-    def _find(self, start_pt, end_pt, mode):XXX
+    def _find(self, start_pt, end_pt, mode): # XXX reg
         # Maybe fix order.
         region = Region(start_pt, end_pt) if start_pt <= end_pt else Region(end_pt, start_pt)
 

@@ -12,6 +12,10 @@ set PYTHONPATH=%ST_PACKAGES_PATH%
 :: Two options for running tests:
 :: 1) Direct execution of all tests in a suite.
 python test_tester.py
+rem python test_format.py
+rem python test_highlight.py
+rem python test_logger.py
+python test_notr.py
 
 :: 2) Run tests explicitly specified in a script. Like:
 ::# Explicitly run specific tests. Requires PYTHONPATH to be set as in run_test.cmd.

@@ -60,7 +60,8 @@ General categories:
 - function not defined in emulated API - lint-time or run-time error.
 
 Note that `sublime_api` generally returns garbage if you try to access outside of the view buffer area.
-The client needs to protect themselves. This tester will throw `ValueError` to help you locate these.
+The client needs to protect themselves. This does not emulate bad behavior - it will throw `ValueError` to help
+track them down.
 
 ## Other Things to Consider
 

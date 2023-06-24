@@ -12,7 +12,27 @@ from Notr import notr, table
 #-----------------------------------------------------------------------------------
 class TestNotr(unittest.TestCase):
 
-    view = None
+    # view = None
+
+    test_text = '\n'.join([
+        'notable 1',
+        'notable 2',
+        'notable 3',
+        'notable 4',
+        'notable 5',
+        '|State |    Size    |Color|',
+        '|   ME   |34|   Red     |',
+        '|  IA   |  31    |Blue     |',
+        '| CO  | 15  | Brown    |',
+        '| NY     | 4  | Yellow    |',
+        '| TX| 2  | Green    |',
+        '| WY   | 45        | White    |',
+        'notable 6',
+        'notable 7',
+        'notable 8',
+        'notable 9',
+        ])
+
 
     def setUp(self):
         # Mock settings.
@@ -30,81 +50,14 @@ class TestNotr(unittest.TestCase):
     def tearDown(self):
         pass
 
-    #@unittest.skip
-    def test_TableFit(self):
 
-        #'|State |    Size    |Color|',
-        #'|   ME   |34|   Red     |',28
-        #'|  IA   |  31    |Blue     |',54
-        #'| CO  | 15  | Brown    |',83
-        #'| NY     | 4  | Yellow    |',108
-        #'| TX| 2  | Green    |',136
-        #'| WY   | 45        | White    |',158-189
-        #{ "scope": "meta.table", "background": "lightblue" },
-        #{ "scope": "meta.table.header", "background": "deepskyblue" },
+    #------------------------ plugin ------------------------------------
 
-
-        test_text = '\n'.join([
-            'notable 1',
-            'notable 2',
-            'notable 3',
-            'notable 4',
-            'notable 5',
-            '|State |    Size    |Color|',
-            '|   ME   |34|   Red     |',
-            '|  IA   |  31    |Blue     |',
-            '| CO  | 15  | Brown    |',
-            '| NY     | 4  | Yellow    |',
-            '| TX| 2  | Green    |',
-            '| WY   | 45        | White    |',
-            'notable 6',
-            'notable 7',
-            'notable 8',
-            'notable 9',
-            ])
-
-        view = sublime.View(600)
-        view.insert(None, 0, test_text)
-
-        # Some basic tests.
-        self.assertEqual(view.rowcol(24), (2, 4))
-        self.assertEqual(view.rowcol(148), (8,15))
-        self.assertEqual(view.rowcol(239), (11, 31))
-        self.assertEqual(view.rowcol(240), (12, 0))
-        self.assertEqual(view.text_point(2, 4), 24)
-        self.assertEqual(view.text_point(8,15), 148)
-        self.assertEqual(view.text_point(11, 31), 239)
-        self.assertEqual(view.text_point(12, 0), 240)
-
-        sel = sublime.Selection(view.id())
-        sel.add(sublime.Region(73, 77)) # in table
-        view.sel = MagicMock(return_value=sel)
-
-        def scope_name(*args, **kwargs):
-            pos = args[0]
-            if pos >= 50 and pos <= 77:
-                return 'text.notr meta.table.header'
-            elif pos >= 78 and pos <= 239:
-                return 'text.notr meta.table'
-            else:
-                return 'text.notr'
-            pass
-
-        view.scope_name = MagicMock(side_effect=scope_name)
-
-        #edit = sublime.Edit('test')
-        cmd = table.TableFitCommand(view)
-        cmd.run(None)
-        reg = cmd.get_table_region()
-
-        newtext = view.substr(reg)
-        self.assertEqual(newtext, 'eeeee')
-
-    #@unittest.skip
+    @unittest.skip
     def test_on_init(self):
         ''' Tests the ntr file parsing. '''
 
-        view = sublime.View(601)
+        view = sublime.View(400)
         sel = sublime.Selection(view.id())
         sel.add(sublime.Region(10, 20, 101))
         view.sel = MagicMock(return_value=sel)
@@ -114,10 +67,10 @@ class TestNotr(unittest.TestCase):
         #syntax.name = MagicMock(return_value='Notr')
         view.syntax = MagicMock(return_value=syntax)
 
-        window = sublime.Window(500)
+        window = sublime.Window(100)
         view._window = MagicMock(return_value=window)
 
-        vnew = sublime.View(501)
+        vnew = sublime.View(401)
         window.new_file = MagicMock(return_value = vnew)
 
         evt = notr.NotrEvent()
@@ -129,17 +82,134 @@ class TestNotr(unittest.TestCase):
         self.assertEqual(len(notr._sections), 13)
         self.assertEqual(len(notr._parse_errors), 0)
 
+
+    #------------------------ table ------------------------------------
+
+    # @unittest.skip
+    def test_table_internal(self):
+        ''' Some basic tests. '''
+
+        view = sublime.View(500)
+        view.insert(None, 0, self.test_text)
+
+        self.assertEqual(view.rowcol(24), (2, 4))
+        self.assertEqual(view.rowcol(148), (8,15))
+        self.assertEqual(view.rowcol(239), (11, 31))
+        self.assertEqual(view.rowcol(240), (12, 0))
+        self.assertEqual(view.text_point(2, 4), 24)
+        self.assertEqual(view.text_point(8,15), 148)
+        self.assertEqual(view.text_point(11, 31), 239)
+        self.assertEqual(view.text_point(12, 0), 240)
+
+
+    # @unittest.skip
+    def test_TableFit(self):
+        ''' TableFitCommand. Fitting column widths. '''
+
+        view = sublime.View(600)
+        view.insert(None, 0, self.test_text)
+
+        sel = sublime.Selection(view.id())
+        sel.add(sublime.Region(73, 77)) # in table
+        view.sel = MagicMock(return_value=sel)
+
+        hdr_pos = (50, 77)
+        body_pos = (78, 239)
+        def scope_name(*args, **kwargs):
+            pos = args[0]
+            if pos >= hdr_pos[0] and pos <= hdr_pos[1]:
+                return 'text.notr meta.table.header'
+            elif pos >= body_pos[0] and pos <= body_pos[1]:
+                return 'text.notr meta.table'
+            else:
+                return 'text.notr'
+            pass
+
+        view.scope_name = MagicMock(side_effect=scope_name)
+
+        cmd = table.TableFitCommand(view)
+        cmd.run(None)
+
+        text_out = '\n'.join([
+            '| State | Size | Color  |',
+            '| ME    | 34   | Red    |',
+            '| IA    | 31   | Blue   |',
+            '| CO    | 15   | Brown  |',
+            '| NY    | 4    | Yellow |',
+            '| TX    | 2    | Green  |',
+            '| WY    | 45   | White  |',
+            ''
+            ])
+
+        hdr_pos = (50, 75)
+        body_pos = (76, 231)
+        reg = cmd.get_table_region()
+        newtext = view.substr(reg)
+        self.assertEqual(newtext, text_out)
+
+
+    # @unittest.skip
+    def test_TableSortByCol(self):
+        ''' TableSortByColCommand. '''
+
+        view = sublime.View(601)
+        view.insert(None, 0, self.test_text)
+
+        cmd = table.TableSortByColCommand(view)
+        cmd.run(None)
+
+
+
+    @unittest.skip
+    def test_TableInsertCol(self):
+        ''' TableInsertColCommand. '''
+
+        view = sublime.View(602)
+        view.insert(None, 0, self.test_text)
+
+        cmd = table.TableInsertColCommand(view)
+        cmd.run(None)
+
+
+
+    @unittest.skip
+    def test_TableDeleteCol(self):
+        ''' TableDeleteColCommand. '''
+
+        view = sublime.View(603)
+        view.insert(None, 0, self.test_text)
+
+        cmd = table.TableDeleteColCommand(view)
+        cmd.run(None)
+
+
+
+    @unittest.skip
+    def test_TableSelectCol(self):
+        ''' TableSelectColCommand. '''
+
+        view = sublime.View(604)
+        view.insert(None, 0, self.test_text)
+
+        cmd = table.TableSelectColCommand(view)
+        cmd.run(None)
+
+
+    #------------------------ notr ------------------------------------
+
     @unittest.skip
     def test_GotoRef(self):
         edit = sublime.Edit('test')
         cmd = notr.NotrGotoRefCommand(view)
         cmd.run(edit)
 
+
     @unittest.skip
     def test_GotoSection(self):
         edit = sublime.Edit('test')
         cmd = notr.NotrGotoSectionCommand(view)
         cmd.run(edit)
+
 
     @unittest.skip
     def test_InsertRef(self):

@@ -117,8 +117,8 @@ class TestStEmul(unittest.TestCase):
         self.assertEqual(view1.rowcol(100), (2, 57))
         self.assertEqual(view1.rowcol(1000), (13, 47))
         self.assertEqual(view1.rowcol(1582), (22, 94))
-        self.assertEqual(view1.rowcol(1583), (22, 95))
-        #self.assertRaises(ValueError, view1.rowcol, 1584)
+        self.assertRaises(ValueError, view1.rowcol, 1583)
+        #self.assertEqual(view1.rowcol(1583), (22, 95))
 
         # text_point()
         self.assertEqual(view1.text_point(0, 0), 0)
