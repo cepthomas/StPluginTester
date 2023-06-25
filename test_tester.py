@@ -17,9 +17,6 @@ class TestStEmul(unittest.TestCase):
     _settings_file = os.path.join('files', 'test_settings.sublime-settings')
     _test_file1 = os.path.join('files', 'ross.txt')
     _test_file2 = os.path.join('files', 'messy.cs')
-    #_settings_file = os.path.join(sublime.packages_path(), 'StPluginTester', 'files', 'test_settings.sublime-settings')
-    #_test_file1 = os.path.join(sublime.packages_path(), 'StPluginTester', 'files', 'ross.txt')
-    #_test_file2 = os.path.join(sublime.packages_path(), 'StPluginTester', 'files', 'messy.cs')
 
     def setUp(self):
         sublime._reset()

@@ -6,7 +6,7 @@ import sublime_plugin
 
 from SbotFormat import sbot_format
 
-print(sys.path)
+# print(sys.path)
 
 #-----------------------------------------------------------------------------------
 class TestFormat(unittest.TestCase):

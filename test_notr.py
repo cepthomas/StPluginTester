@@ -12,14 +12,15 @@ from Notr import notr, table
 #-----------------------------------------------------------------------------------
 class TestNotr(unittest.TestCase):
 
-    # view = None
+    print('TestNotr')
 
-    test_text = '\n'.join([
+    # GP test text.
+    test_text = [
+        'notable 0',
         'notable 1',
         'notable 2',
         'notable 3',
         'notable 4',
-        'notable 5',
         '|State |    Size    |Color|',
         '|   ME   |34|   Red     |',
         '|  IA   |  31    |Blue     |',
@@ -27,20 +28,24 @@ class TestNotr(unittest.TestCase):
         '| NY     | 4  | Yellow    |',
         '| TX| 2  | Green    |',
         '| WY   | 45        | White    |',
-        'notable 6',
-        'notable 7',
-        'notable 8',
-        'notable 9',
-        ])
+        'notable 12',
+        'notable 13',
+        'notable 14',
+        'notable 15',
+        ]
 
+    test_text_str = '\n'.join(test_text)
+
+    print('TestNotr2')
 
     def setUp(self):
         # Mock settings.
+        print('setUp')
         files_path = os.path.join(sublime.packages_path(), 'Notr', 'files')
         mock_settings = {
             "visual_line_length": 100,
-            "user_hl": [["2DO", "things"], ["user", "dynamic"], ["and_a", "and_b", "and_c"]],
-            "user_hl_whole_word": True,
+            "fixed_hl": [["2DO", "things"], ["user", "dynamic"], ["and_a", "and_b", "and_c"]],
+            "fixed_hl_whole_word": True,
         }
         mock_settings["notr_paths"] = [files_path]
         mock_settings["notr_index"] = os.path.join(files_path, 'test-index.ntr')
@@ -88,10 +93,12 @@ class TestNotr(unittest.TestCase):
     # @unittest.skip
     def test_table_internal(self):
         ''' Some basic tests. '''
+        print('test_table_internal')
 
         view = sublime.View(500)
-        view.insert(None, 0, self.test_text)
+        view.insert(None, 0, self.test_text_str)
 
+        # Test rowcol() and text_point().
         self.assertEqual(view.rowcol(24), (2, 4))
         self.assertEqual(view.rowcol(148), (8,15))
         self.assertEqual(view.rowcol(239), (11, 31))
@@ -105,31 +112,33 @@ class TestNotr(unittest.TestCase):
     # @unittest.skip
     def test_TableFit(self):
         ''' TableFitCommand. Fitting column widths. '''
+        print('test_TableFit')
 
+        # Create test view.
         view = sublime.View(600)
-        view.insert(None, 0, self.test_text)
+        view.insert(None, 0, self.test_text_str)
 
+        # Mock view selection.
         sel = sublime.Selection(view.id())
-        sel.add(sublime.Region(73, 77)) # in table
+        sel.add(sublime.Region(73, 77)) # somewhere in table
         view.sel = MagicMock(return_value=sel)
 
-        hdr_pos = (50, 77)
-        body_pos = (78, 239)
+        # Mock scope interrogation.
         def scope_name(*args, **kwargs):
-            pos = args[0]
-            if pos >= hdr_pos[0] and pos <= hdr_pos[1]:
+            rc = view.rowcol(args[0])
+            if rc[0] == 5:
                 return 'text.notr meta.table.header'
-            elif pos >= body_pos[0] and pos <= body_pos[1]:
+            elif rc[0] >= 6 and rc[0] <= 11:
                 return 'text.notr meta.table'
             else:
                 return 'text.notr'
-            pass
-
         view.scope_name = MagicMock(side_effect=scope_name)
 
+        # Run the command.
         cmd = table.TableFitCommand(view)
         cmd.run(None)
 
+        # Should look like this now.
         text_out = '\n'.join([
             '| State | Size | Color  |',
             '| ME    | 34   | Red    |',
@@ -141,56 +150,59 @@ class TestNotr(unittest.TestCase):
             ''
             ])
 
-        hdr_pos = (50, 75)
-        body_pos = (76, 231)
         reg = cmd.get_table_region()
         newtext = view.substr(reg)
         self.assertEqual(newtext, text_out)
 
 
-    # @unittest.skip
+    #@unittest.skip
     def test_TableSortByCol(self):
         ''' TableSortByColCommand. '''
 
+        # Create test view.
         view = sublime.View(601)
-        view.insert(None, 0, self.test_text)
+        view.insert(None, 0, self.test_text_str)
 
+        # Run the command.
         cmd = table.TableSortByColCommand(view)
         cmd.run(None)
-
 
 
     @unittest.skip
     def test_TableInsertCol(self):
         ''' TableInsertColCommand. '''
 
+        # Create test view.
         view = sublime.View(602)
-        view.insert(None, 0, self.test_text)
+        view.insert(None, 0, self.test_text_str)
 
+        # Run the command.
         cmd = table.TableInsertColCommand(view)
         cmd.run(None)
-
 
 
     @unittest.skip
     def test_TableDeleteCol(self):
         ''' TableDeleteColCommand. '''
 
+        # Create test view.
         view = sublime.View(603)
-        view.insert(None, 0, self.test_text)
+        view.insert(None, 0, self.test_text_str)
 
+        # Run the command.
         cmd = table.TableDeleteColCommand(view)
         cmd.run(None)
-
 
 
     @unittest.skip
     def test_TableSelectCol(self):
         ''' TableSelectColCommand. '''
 
+        # Create test view.
         view = sublime.View(604)
-        view.insert(None, 0, self.test_text)
+        view.insert(None, 0, self.test_text_str)
 
+        # Run the command.
         cmd = table.TableSelectColCommand(view)
         cmd.run(None)
 
@@ -199,25 +211,27 @@ class TestNotr(unittest.TestCase):
 
     @unittest.skip
     def test_GotoRef(self):
-        edit = sublime.Edit('test')
+        view = sublime.View(701)
         cmd = notr.NotrGotoRefCommand(view)
-        cmd.run(edit)
+        cmd.run(None)
 
 
     @unittest.skip
     def test_GotoSection(self):
-        edit = sublime.Edit('test')
+        view = sublime.View(702)
         cmd = notr.NotrGotoSectionCommand(view)
-        cmd.run(edit)
+        cmd.run(None)
 
 
     @unittest.skip
     def test_InsertRef(self):
-        edit = sublime.Edit('test')
+        view = sublime.View(703)
         cmd = notr.NotrInsertRefCommand(view)
-        cmd.run(edit)
+        cmd.run(None)
 
 
 #-----------------------------------------------------------------------------------
 if __name__ == '__main__':
+    print('__main__')
     unittest.main()
+    print('__main__2')
