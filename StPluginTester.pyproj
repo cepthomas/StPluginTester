@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>56224532-0e9c-4b7c-9778-7a7e97187dad</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>test_notr.py</StartupFile>
+    <StartupFile>test_table.py</StartupFile>
     <SearchPath>..\..\..\Users\cepth\AppData\Roaming\Sublime Text\Packages</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -36,6 +36,7 @@
     <Compile Include="test_highlight.py" />
     <Compile Include="test_format.py" />
     <Compile Include="test_notr.py" />
+    <Compile Include="test_table.py" />
     <Compile Include="test_tester.py" />
     <Compile Include="$(APPDATA)\Sublime Text\Packages\Notr\notr.py" />
     <Compile Include="$(APPDATA)\Sublime Text\Packages\Notr\table.py" />
@@ -54,6 +55,8 @@
     <Content Include="files\ross.txt" />
     <Content Include="files\test_exec.bat" />
     <Content Include="files\test_settings.sublime-settings" />
+    <Content Include="files\test_table.ntr" />
+    <Content Include="files\test_notr.ntr" />
     <Content Include="README.md" />
   </ItemGroup>
   <ItemGroup>

@@ -8,7 +8,7 @@ import string
 
 # All row/column are 0-based. Client is responsible for converting for UI preference.
 # Position is always 0-based.
-# Some guessing as to how ST validates args - seems to be limiting not throw.
+# Some guessing as to how ST validates args - seems to be clamping not throwing.
 
 
 #---------------- Added items to support emulation and debug --------------------------
@@ -42,41 +42,6 @@ def _reset():
     _window = None
     _view_id = 0
 
-def _validate(view, x, allow_empty=False):
-    '''
-    Checks arg for validity otherwise throws.
-    Returns a valid ordered Region within 0 to max_val inclusive.
-    '''
-    if view._buffer is None:
-        raise ValueError('_buffer is None')
-    if not allow_empty and len(view._buffer) == 0:
-        raise ValueError('_buffer is empty')
-
-    max_val = max(0, len(view._buffer) - 1)
-    if isinstance(x, Region):
-        if x.a > max_val or x.b > max_val or x.a < 0 or x.b < 0:
-            raise ValueError('region out of range')
-    else:  # Point
-        if x > max_val or x < 0:
-            raise ValueError('point out of range')
-
-    # Gen output.
-    a = max(0, x.a) if isinstance(x, Region) else max(0, x)
-    b = min(x.a, max_val) if isinstance(x, Region) else min(x, max_val)
-    if a > b:
-        a, b = b, a
-    return Region(a, b)
-
-
-
-#def _clamp(view, x):
-#     ''' Returns a valid ordered Region within 0 to max_val inclusive. '''
-#     max_val = len(view._buffer) - 1 # TODO empty or null buffer.
-#     a = max(0, x.a) if isinstance(x, Region) else max(0, x)
-#     b = min(x.a, max_val) if isinstance(x, Region) else min(x, max_val)
-#     if a > b:
-#         a, b = b, a
-#     return Region(a, b)
 
 
 #---------------- sublime.definitions --------------------------
@@ -219,9 +184,9 @@ class View():
 
     ##### translation between row/col and index
 
-    def rowcol(self, point): # XXX val view/bufflen/pt - throw?
+    def rowcol(self, point):
         # Get row and column for the point.
-        _validate(self, point)
+        point = self._validate(point).a
         row = 0
         col = 0
         for index in range(point):
@@ -232,7 +197,7 @@ class View():
                 col += 1
         return (row, col)
 
-    def text_point(self, row, col): # XXX r/c -> val view/bufflen/pt - throw?
+    def text_point(self, row, col):
         # Calculates the character offset of the given, 0-based, row and col
         point = 0
         row_i = 0
@@ -252,22 +217,19 @@ class View():
                     point += 1
                     col_i += 1
 
-        if found:
-            return point           
-        else:
-            raise ValueError()
+        return point           
 
     ##### find ops
 
-    def find(self, pattern, start_pt, flags=0): # XXX if view/bufflen/pt> (-1, -1)
-        _validate(self, start_pt)
+    def find(self, pattern, start_pt, flags=0):
+        start_pt = self._validate(start_pt).a
         if flags != 0:
             raise NotImplementedError('args')
 
         pos = self._buffer.find(pattern, start_pt)
         return Region(pos, pos + len(pattern)) if pos >= 0 else None
 
-    def find_all(self, pattern, flags=0, fmt=None, extractions=None): # XXX if view/bufflen/pt>
+    def find_all(self, pattern, flags=0, fmt=None, extractions=None):
         regions = []
         ind = 0
 
@@ -285,54 +247,42 @@ class View():
 
         return regions
 
-    def substr(self, x): # XXX x clamp
+    def substr(self, x):
         # The char at the Point or within the Region provided.
-        _validate(self, x)
-        if isinstance(x, Region):
-            return self._buffer[x.a:x.b]
-        else:  # Point
-            return self._buffer[x]
+        region = self._validate(x)
+        return self._buffer[region.a:region.b]
 
-    def word(self, x): # XXX x
+    def word(self, x):
         # The word Region that contains the Point. If a Region is provided its beginning/end are expanded to word boundaries.
-        _validate(self, x)
-        if isinstance(x, Region):
-            return self._find(x.a, x.b, _FIND_WORD)
-        else:  # Point
-            return self._find(x, x, _FIND_WORD)
+        region = self._validate(x)
+        return self._find(region.a, region.b, _FIND_WORD)
 
-    def line(self, x): # XXX x
+    def line(self, x):
         # Returns The line Region that contains the Point or an expanded Region to the beginning/end of lines, excluding the newline character.
-        _validate(self, x)
-        if isinstance(x, Region):
-            return self._find(x.a, x.b, _FIND_LINE)
-        else:  # Point
-            return self._find(x, x, _FIND_LINE)
+        region = self._validate(x)
+        return self._find(region.a, region.b, _FIND_LINE)
 
-    def full_line(self, x): # XXX x
+    def full_line(self, x):
         # full_line(x: Region | Point) ret: Region The line that contains the Point or an expanded Region to the beginning/end of lines, including the newline character.
-        _validate(self, x)
-        if isinstance(x, Region):
-            return self._find(x.a, x.b, _FIND_FULL_LINE)
-        else:  # Point
-            return self._find(x, x, _FIND_FULL_LINE)
+        region = self._validate(x)
+        return self._find(region.a, region.b, _FIND_FULL_LINE)
 
     ##### edit ops
 
-    def insert(self, edit, point, text): # XXX pt
-        point = _validate(self, point, allow_empty=True).a # allow insert in empty
+    def insert(self, edit, point, text):
+        point = self._validate(point, allow_empty=True).a # allow insert in empty
         self._buffer = self._buffer[:point] + text + self._buffer[point:]
         return len(text)
 
-    def replace(self, edit, region, text): # XXX reg
-        _validate(self, region)
+    def replace(self, edit, region, text):
+        region = self._validate(region)
         self._buffer = self._buffer[:region.a] + text + self._buffer[region.b:]
         return len(text)
 
     ##### utilities
 
-    def split_by_newlines(self, region): # XXX reg
-        _validate(self, region)
+    def split_by_newlines(self, region):
+        region = self._validate(region)
         b = self._buffer[region.a:region.b]
         return b.splitlines()
 
@@ -356,9 +306,34 @@ class View():
 
     ##### helpers
 
-    def _find(self, start_pt, end_pt, mode): # XXX reg
+    def _validate(self, x, allow_empty=False):
+        '''
+        Checks arg for validity otherwise throws.
+        Returns a valid ordered Region within 0 to max_val inclusive.
+        '''
+        if self._buffer is None:
+            raise ValueError('_buffer is None')
+        if not allow_empty and len(self._buffer) == 0:
+            raise ValueError('_buffer is empty')
+
+        max_val = max(0, len(self._buffer) - 1)
+        if isinstance(x, Region):
+            if x.a > max_val or x.b > max_val or x.a < 0 or x.b < 0:
+                raise ValueError('region out of range')
+        else:  # Point
+            if x > max_val or x < 0:
+                raise ValueError('point out of range')
+
+        # Gen output.
+        a = max(0, x.a) if isinstance(x, Region) else max(0, x)
+        b = min(x.b, max_val) if isinstance(x, Region) else min(x, max_val)
+        if a > b:
+            a, b = b, a
+        return Region(a, b)
+
+    def _find(self, start_pt, end_pt, mode):
         # Maybe fix order.
-        region = Region(start_pt, end_pt) if start_pt <= end_pt else Region(end_pt, start_pt)
+        region = self._validate(Region(start_pt, end_pt))
 
         # Find space/nl/start before
         ind = start_pt
@@ -367,11 +342,11 @@ class View():
             if ind == 0:
                 region.a = ind
                 done = True
-            elif self._buffer[ind] == '\n':
-                region.a = ind + 1
+            elif self._buffer[ind - 1] == '\n':
+                region.a = ind
                 done = True
-            elif mode == _FIND_WORD and self._buffer[ind] in string.whitespace:
-                region.a = ind + 1
+            elif mode == _FIND_WORD and self._buffer[ind] - 1 in string.whitespace:
+                region.a = ind
                 done = True
             else:
                 ind -= 1

@@ -1,12 +1,18 @@
 import sys
 import os
 import pathlib
+import shutil
 import platform
 import subprocess
 import collections
 import enum
 import sublime
 import sublime_plugin
+
+
+# Odds and ends shared by the plugin family.
+
+# print(f'Loading {__file__}')
 
 
 # Internal categories.
@@ -116,47 +122,6 @@ def wait_load_file(window, fpath, line):
         vnew = None
 
     return vnew
-
-
-#-----------------------------------------------------------------------------------
-def start_file(filepath):
-    ''' Like you double-clicked it. '''
-    ret = 0
-    try:
-        if platform.system() == 'Darwin':       # macOS
-            ret = subprocess.call(('open', filepath))
-        elif platform.system() == 'Windows':    # Windows
-            os.startfile(filepath)
-        else:                                   # linux variants
-            re = subprocess.call(('xdg-open', filepath))
-    except Exception as e:
-        slog(CAT_ERR, f'{e}')
-        ret = 90
-
-    return ret
-
-
-#-----------------------------------------------------------------------------------
-def run_script(filepath, window):
-    ''' Script runner. Currently only python. Creates a new view with output. '''
-    ret = 0
-    try:
-        cmd = ''
-        if filepath.endswith('.py'):
-            cmd = f'python "{filepath}"'
-
-        data = subprocess.run(cmd, capture_output=True, text=True)
-        output = data.stdout
-        errors = data.stderr
-        if len(errors) > 0:
-            output = output + '============ stderr =============\n' + errors
-        create_new_view(window, output)
-
-    except Exception as e:
-        slog(CAT_ERR, f'{e}')
-        ret = 91
-
-    return ret
 
 
 #-----------------------------------------------------------------------------------
