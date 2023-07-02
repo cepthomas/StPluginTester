@@ -291,7 +291,7 @@ class TestTable(unittest.TestCase):
     #------------------------------------------------------------
     @unittest.skip
     def test_TableInsertColEnd(self):
-        ''' TableInsertColCommand at end of line. TODO doesn't work well for ragged - hw should it? '''
+        ''' TableInsertColCommand at end of line. Doesn't work perfectly for ragged - user should fit first. '''
 
         self.view.insert(None, 0, self.test_text_str)
 

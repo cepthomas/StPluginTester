@@ -4,11 +4,11 @@ The primary focus is to debug logic and algorithms defined in the various EventL
 application-specific derived classes.
 
 - Uses Visual Studio 2022 to develop Sublime Text plugins.
-- Uses python unittest + mocks to debug plugins using VS.
+- Uses python unittest + mock to debug plugins using VS.
 - Tests can also be executed from the command line or using unittest test runners.
 - This should also be useful for debugging non-ST python applications.
 
-Built for ST4 on Windows. May work on Linux also.
+Built for ST4 on Windows. May be useful on Linux also.
 
 ## Background
 
@@ -29,18 +29,19 @@ tester for a typical plugin application being developed.
 StPluginTester
 |   StPluginTester.pyproj - VS file
 |   StPluginTester.sln - VS file
+|   run_test.cmd - run from cl
 |   sublime.py - ST emulation
 |   sublime_plugin.py - ST emulation
-|   test_highlight.py - test-code
-|   run_test.cmd - run from cl
-|   sbot_common.py - utils
+|   test_myplugin.py - test-code
+|   ... other source and test files
 |
 \---files - test files as needed
 
-$(APPDATA)\Sublime Text\Packages\SbotHighlight
-    highlight.py - code-under-test
-    *.sublime-*
-    etcetera
+$APPDATA\Sublime Text\Packages\MyPlugin
+    myplugin.py - code-under-test
+    Context.sublime-menu
+    MyPlugin.sublime-settings
+    ... other source and config files
 ```
 
 Since this project is performing a specific function (debugging my plugins) it is hard-coded to support them.
