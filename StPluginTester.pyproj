@@ -46,21 +46,21 @@
     <Compile Include="$(APPDATA)\Sublime Text\Packages\SbotRender\sbot_render.py" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="files\felix.jpg" />
-    <Content Include="files\messy.c" />
-    <Content Include="files\messy.cs" />
-    <Content Include="files\messy.json" />
-    <Content Include="files\messy.xml" />
-    <Content Include="files\nonascii.txt" />
-    <Content Include="files\ross.txt" />
-    <Content Include="files\test_exec.bat" />
-    <Content Include="files\test_settings.sublime-settings" />
-    <Content Include="files\test_table.ntr" />
-    <Content Include="files\test_notr.ntr" />
+    <Content Include="test_files\felix.jpg" />
+    <Content Include="test_files\messy.c" />
+    <Content Include="test_files\messy.cs" />
+    <Content Include="test_files\messy.json" />
+    <Content Include="test_files\messy.xml" />
+    <Content Include="test_files\nonascii.txt" />
+    <Content Include="test_files\ross.txt" />
+    <Content Include="test_files\test_exec.bat" />
+    <Content Include="test_files\test_settings.sublime-settings" />
+    <Content Include="test_files\test_table.ntr" />
+    <Content Include="test_files\test_notr.ntr" />
     <Content Include="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="files\" />
+    <Folder Include="test_files\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
 </Project>

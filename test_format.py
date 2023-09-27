@@ -20,7 +20,7 @@ class TestFormat(unittest.TestCase):
     def test_format_json(self):
         v = sublime.View(601)
 
-        with open(r'.\files\messy.json', 'r') as fp:
+        with open(r'.\test_files\messy.json', 'r') as fp:
             # The happy path.
             s = fp.read()
             cmd = sbot_format.SbotFormatJsonCommand(v)
@@ -36,7 +36,7 @@ class TestFormat(unittest.TestCase):
     def test_format_xml(self):
         v = sublime.View(602)
 
-        with open(r'.\files\messy.xml', 'r') as fp:
+        with open(r'.\test_files\messy.xml', 'r') as fp:
             # The happy path.
             s = fp.read()
             cmd = sbot_format.SbotFormatXmlCommand(v)

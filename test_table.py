@@ -31,7 +31,7 @@ class TestTable(unittest.TestCase):
     #------------------------------------------------------------
     def setUp(self):
         # Get test text.
-        with open('./files/test_table.ntr', 'r') as f:
+        with open('./test_files/test_table.ntr', 'r') as f:
             self.test_text = f.readlines()
         # String version.
         self.test_text_str = ''.join(self.test_text)
@@ -122,7 +122,7 @@ class TestTable(unittest.TestCase):
 
         # Run the command.
         cmd = table.TableSortColCommand(self.view)
-        cmd.run(None)
+        cmd.run(None, asc=True)
 
         # Should look like this now.
         exptext = '\n'.join([
@@ -143,7 +143,7 @@ class TestTable(unittest.TestCase):
         # Run command again to sort opposite order. Tweak caret to match fitted table.
         sel.clear()
         sel.add(sublime.Region(266, 266))
-        cmd.run(None)
+        cmd.run(None, asc=False)
 
         exptext = '\n'.join([
             '| State | Size | Color                 |       |',
@@ -178,7 +178,7 @@ class TestTable(unittest.TestCase):
 
         # Run the command.
         cmd = table.TableSortColCommand(self.view)
-        cmd.run(None)
+        cmd.run(None, asc=True)
 
         # Should look like this now.
         exptext = '\n'.join([
@@ -199,7 +199,7 @@ class TestTable(unittest.TestCase):
         # Run command again to sort opposite order. Tweak caret to match fitted table.
         sel.clear()
         sel.add(sublime.Region(324, 324))
-        cmd.run(None)
+        cmd.run(None, asc=False)
 
         exptext = '\n'.join([
             '| State | Size | Color                 |       |',
