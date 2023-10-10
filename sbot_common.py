@@ -28,6 +28,9 @@ ALL_CATS = [CAT_NON, CAT_ERR, CAT_WRN, CAT_INF, CAT_DBG, CAT_TRC]
 # This is shared across plugins.
 HighlightInfo = collections.namedtuple('HighlightInfo', 'scope_name, region_name, type')
 
+# Internal flag.
+_temp_view_id = None
+
 
 #-----------------------------------------------------------------------------------
 def slog(cat: str, message='???'):
@@ -94,12 +97,31 @@ def get_sel_regions(view, settings):
 
 
 #-----------------------------------------------------------------------------------
-def create_new_view(window, text):
-    ''' Creates a temp view with text. Returns the view.'''
-    vnew = window.new_file()
-    vnew.set_scratch(True)
-    vnew.run_command('append', {'characters': text})  # insert has some odd behavior - indentation
-    return vnew
+def create_new_view(window, text, reuse=True):
+    ''' Creates or reuse existing temp view with text. Returns the view.'''
+    view = None
+    global _temp_view_id
+
+    # Locate the current temp view. This will gracefully fail if there isn't one.
+    if reuse:
+        for v in window.views():
+            if v.id() == _temp_view_id:
+                view = v
+                break
+
+    if view is None:
+        # New instance.
+        view = window.new_file()
+        view.set_scratch(True)
+        _temp_view_id = view.id()
+
+    view.run_command('select_all')
+    view.run_command('cut')
+    view.run_command('append', {'characters': text})  # insert has some odd behavior - indentation
+    
+    window.focus_view(view)
+
+    return view
 
 
 #-----------------------------------------------------------------------------------
@@ -169,19 +191,15 @@ def expand_vars(s: str):
 
 #-----------------------------------------------------------------------------------
 def open_file(fn: str):
-    ''' Open a file like you double-clicked it in the UI. Returns success. '''
+    ''' Open a file like you double-clicked it in the UI. Returns success. Let client handle exceptions. '''
     ok = False
 
-    try:
-        if fn is not None:
-            if platform.system() == 'Darwin':
-                ret = subprocess.call(('open', fn))
-            elif platform.system() == 'Windows':
-                os.startfile(fn)
-            else:  # linux variants
-                ret = subprocess.call(('xdg-open', fn))
-            ok = True
-    except Exception as e:
-        if e is not None:
-            slog(sc.CAT_ERR, e)
+    if fn is not None:
+        if platform.system() == 'Darwin':
+            ret = subprocess.call(('open', fn))
+        elif platform.system() == 'Windows':
+            os.startfile(fn)
+        else:  # linux variants
+            ret = subprocess.call(('xdg-open', fn))
+        ok = True
     return ok
