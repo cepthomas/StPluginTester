@@ -1,25 +1,21 @@
 import sys
 import os
 import pathlib
-import shutil
-import platform
-import subprocess
 import collections
-import enum
 import sublime
-import sublime_plugin
+# import sublime_plugin
 
 
 # Odds and ends shared by the plugin family.
 # It is copied from another area during build so any edits will be overwritten.
 
 # Standard log categories.
-CAT_DEF = '---'
 CAT_ERR = 'ERR'
 CAT_WRN = 'WRN'
 CAT_INF = 'INF'
 CAT_DBG = 'DBG'
 CAT_TRC = 'TRC'
+ALL_CATS = [CAT_ERR, CAT_WRN, CAT_INF, CAT_DBG, CAT_TRC]
 
 # Data names shared across plugins.
 HighlightInfo = collections.namedtuple('HighlightInfo', 'scope_name, region_name, type')
@@ -36,13 +32,11 @@ def slog(cat: str, message='???'):
     Note that cat should be three chars or less.
     '''
 
-    # Check user cat len.
-    cat = (cat + CAT_DEF)[:3]
-
     # Get caller info.
     frame = sys._getframe(1)
     fn = os.path.basename(frame.f_code.co_filename)
     line = frame.f_lineno
+
     # func = frame.f_code.co_name
     # mod_name = frame.f_globals["__name__"]
     # class_name = frame.f_locals['self'].__class__.__name__
@@ -189,22 +183,37 @@ def expand_vars(s: str):
             if count >= 3:
                 done = True
                 s = None
-
     return s
 
 
 #-----------------------------------------------------------------------------------
-def open_file(fn: str):
-    ''' Open a file like you double-clicked it in the UI. Returns success. Client handles exceptions. '''
+def get_path_parts(view, paths):
+    '''
+    Slide and dice into useful parts.
+    Returns (dir, fn, path) where:
+    - path is fully expanded path or None if invalid.
+    - fn is None for a directory.
+    '''
+    dir = None
+    fn = None
+    path = None
 
-    ok = False
+    if paths is None:  # from view menu
+        # Get the view file.
+        path = view.file_name()
+    elif len(paths) > 0:  # from sidebar
+        # Get the first element of paths.
+        path = paths[0]
 
-    if fn is not None:
-        if platform.system() == 'Darwin':
-            ret = subprocess.call(('open', fn))
-        elif platform.system() == 'Windows':
-            os.startfile(fn)
-        else:  # linux variants
-            ret = subprocess.call(('xdg-open', fn))
-        ok = True
-    return ok
+    if path is not None:
+        exp_path = expand_vars(path)
+        # if exp_path is None:
+        #     slog(CAT_ERR, f'Bad path:{path}')
+
+        if os.path.isdir(exp_path):
+            dir = exp_path
+        else:
+            dir, fn = os.path.split(exp_path)
+        path = exp_path
+
+    return (dir, fn, path)
