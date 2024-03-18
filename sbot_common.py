@@ -242,13 +242,13 @@ def open_path(path):
 def open_terminal(where):
     ''' Open a terminal where. '''
 
-    # FUTURE handle desktop types?
+    # This works for gnome. Maybe should support other desktop types?
     # Kde -> konsole
-    # GNOME -> gnome-terminal
     # xfce4 -> xfce4-terminal
     # Cinnamon -> x-terminal-emulator
     # MATE -> mate-terminal --window
     # Unity -> gnome-terminal --profile=Default
+
     if platform.system() == 'Windows':
         cmd = f'wt -d "{where}"'  # W10+
     else:  # linux + mac(?)
